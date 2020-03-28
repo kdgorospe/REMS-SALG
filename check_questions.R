@@ -85,12 +85,35 @@ for (i in 1:length(years)){
 
 question_list <- rbindlist(question_list, fill = TRUE)
 
+# Remove question 1.1 (header - not actually a question)
+question_list <- question_list %>%
+  select(-'1.1')
+
 question_list <- question_list %>%
   mutate_if(.predicate = is.factor, .funs = as.character)
 
 write.csv(question_list, "question_list.csv", row.names = FALSE)
-# FIX IT - publish as google xlsx? format or keep as csv
-drive_upload("question_list.csv", path = as_dribble("REMS_SALG/"))
-
-
+#drive_upload("question_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload
+# FILE ID for question_list: 1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc
+drive_update(file = as_id("1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc"), media = "question_list.csv")
 file.remove("question_list.csv")
+
+
+### THe following creates a list of question IDs to be used for specifying the data structure
+question_id_list <- NA
+# Create list of questions and ids
+# start with i=2 because i=1 is ID column
+for (i in 2:length(names(question_list))){
+  # get IDs just for those questions that are not NAs
+  ids <- question_list$id[!is.na(question_list[,i])]
+  question_id_set <- paste(ids, names(question_list)[i], sep = "_")
+  question_id_list <- append(question_id_list, question_id_set)
+}
+
+question_id_list <- question_id_list[-1]
+
+write.csv(question_id_list, "question_id_list.csv", row.names = FALSE)
+# drive_upload("question_id_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload
+# FILE ID for questions id list: 1UHFoY0kfIT2p2kHD9hzdNJLQWf2pGtvl
+drive_update(file = as_id("1UHFoY0kfIT2p2kHD9hzdNJLQWf2pGtvl"), media = "question_id_list.csv")
+file.remove("question_id_list.csv")
