@@ -91,3 +91,6 @@ question_list <- question_list %>%
 write.csv(question_list, "question_list.csv", row.names = FALSE)
 # FIX IT - publish as google xlsx? format or keep as csv
 drive_upload("question_list.csv", path = as_dribble("REMS_SALG/"))
+
+
+file.remove("question_list.csv")
