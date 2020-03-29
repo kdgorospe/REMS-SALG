@@ -129,11 +129,8 @@ question_id_list <- question_id_list %>%
     pre_post == "pre" & q_number == "1.1.5" ~ "pre_understanding_urchinfertilization",
     pre_post == "post" & q_number == "1.1.5" ~ "post_understanding_urchinfertilization",
     
-    pre_post == "pre" & q_number == "1.1.6" ~ "pre_understanding_sound",
-    pre_post == "post" & q_number == "1.1.6" ~ "post_understanding_sound",
-    
         
-    # Questions that drop out or appear (need to filter by year)
+    # Questions that drop out and/or appear (need to filter by year)
     pre_post == "pre" & q_number == "1.1.4" & year >= 2013 & year <= 2014 ~ "pre_understanding_aquaculture",
     pre_post == "post" & q_number == "1.1.4" & year >= 2013 & year <= 2014 ~ "post_understanding_aquaculture",
     
@@ -141,22 +138,226 @@ question_id_list <- question_id_list %>%
     pre_post == "post" & q_number == "1.1.4" & year >= 2015 & year <= 2016 ~ "post_understanding_ethology",
     
     pre_post == "pre" & q_number == "1.2" & year >= 2013 & year <= 2016 ~ "pre_understanding_life",
+    pre_post == "pre" & q_number == "2.1" & year >= 2017 & year <= 2018 ~ "pre_understanding_life",
     pre_post == "post" & q_number == "1.2" & year >= 2013 & year <= 2016 ~ "post_understanding_life",
+    pre_post == "post" & q_number == "2.1" & year >= 2017 & year <= 2018 ~ "post_understanding_life",
     
-    pre_post == "pre" & q_number == "1.3" & year >= 2013 & year <= 2016 ~ "pre_understanding_society",
-    pre_post == "post" & q_number == "1.3" & year >= 2013 & year <= 2016 ~ "post_understanding_society",
     
+    pre_post == "pre" & q_number == "2.5" & year >= 2013 & year <= 2016 ~ "pre_skill_withothers",
+    pre_post == "post" & q_number == "2.5" & year >= 2013 & year <= 2016 ~ "post_skill_withothers",
+    
+    pre_post == "pre" & q_number == "1.1.8" ~ "pre_understanding_diversity",
+    pre_post == "post" & q_number == "1.1.8" ~ "post_understanding_diversity",
+    
+    pre_post == "pre" & q_number == "1.1.9" ~ "pre_understanding_coralskel",
+    pre_post == "post" & q_number == "1.1.9" ~ "post_understanding_coralskel",
+    
+    pre_post == "pre" & q_number == "1.1.10" ~ "pre_understanding_climatechange",
+    pre_post == "post" & q_number == "1.1.10" ~ "post_understanding_climatechange",
+    
+    
+    # Questions only asked "POST" that change numbers in different years: at least two queries for each pre and post set
+    pre_post == "post" & q_number == "6.1" & year >= 2013 & year <= 2016 ~ "prog_eval_coraleco",
+    pre_post == "post" & q_number == "7.1" & year >= 2017 & year <= 2018 ~ "prog_eval_coraleco",
+    
+    pre_post == "post" & q_number == "6.3" & (year == 2013 | (year>= 2015 & year <= 2016)) ~ "prog_eval_oceanacid",
+    pre_post == "post" & q_number == "6.2" & year == 2014 ~ "prog_eval_oceanacid",
+    pre_post == "post" & q_number == "7.2" & year >= 2017 & year <= 2018 ~ "prog_eval_oceanacid",
+    
+    pre_post == "post" & q_number == "6.5" & year == 2013 ~ "prog_eval_bioacoustics",
+    pre_post == "post" & q_number == "6.7" & year == 2014 ~ "prog_eval_bioacoustics",
+    pre_post == "post" & q_number == "6.8" & year == 2015 ~ "prog_eval_bioacoustics",
+    pre_post == "post" & q_number == "6.6" & year == 2016 ~ "prog_eval_bioacoustics",
+    pre_post == "post" & q_number == "7.4" & (year == 2017 | year == 2018) ~ "prog_eval_bioacoustics",
+    
+    
+    pre_post == "post" & q_number == "6.7" & (year == 2013 | year == 2015) ~ "prog_eval_urchinfertilization",
+    pre_post == "post" & q_number == "6.5" & (year == 2014 | year == 2016) ~ "prog_eval_urchinfertilization",
+    pre_post == "post" & q_number == "7.3" & year <= 2017 & year <= 2018 ~ "prog_eval_urchinfertilization",
+    
+    pre_post == "post" & q_number == "6.8" & year == 2013 ~ "prog_eval_spawning",
+    
+    pre_post == "post" & q_number == "6.4" & year == 2014 ~ "prog_eval_planktoneco",
+    
+    pre_post == "post" & q_number == "6.5" & year == 2015 ~ "prog_eval_squid",
+    pre_post == "post" & q_number == "6.4" & year == 2016 ~ "prog_eval_squid",
+    
+    
+    pre_post == "post" & q_number == "6.10" & (year == 2013 | year == 2015) ~ "prog_eval_scimethod",
+    pre_post == "post" & q_number == "6.9" & year == 2014 ~ "prog_eval_scimethod",
+    pre_post == "post" & q_number == "6.7" & year == 2016 ~ "prog_eval_scimethod",
+    pre_post == "post" & q_number == "7.5" & (year == 2017 | year == 2018) ~ "prog_eval_scimethod",
+    
+    pre_post == "post" & q_number == "6.11" & (year == 2013 | year == 2015) ~ "prog_eval_careerday",
+    pre_post == "post" & q_number == "6.10" & year == 2014 ~ "prog_eval_careerday",
+    pre_post == "post" & q_number == "6.8" & year == 2016 ~ "prog_eval_careerday",
+    pre_post == "post" & q_number == "7.6" & (year == 2017 | year == 2018) ~ "prog_eval_careerday",
+    
+    pre_post == "post" & q_number == "7.1" & year >= 2013 & year <= 2016 ~ "prog_eval_groupresearch",
+    pre_post == "post" & q_number == "8.1" & year >= 2017 & year <= 2018 ~ "prog_eval_groupresearch",
+    
+    pre_post == "post" & q_number == "7.2" & year >= 2013 & year <= 2016 ~ "prog_eval_confidentresearch",
+    pre_post == "post" & q_number == "8.2" & year >= 2017 & year <= 2018 ~ "prog_eval_confidentresearch",
+    
+    
+    # Questions that change numbers in different years: at least two queries for each pre and post set
     pre_post == "pre" & q_number == "2.1" & year >= 2013 & year <= 2016 ~ "pre_skill_developh0",
+    pre_post == "pre" & q_number == "3.1" & year >= 2017 & year <= 2018 ~ "pre_skill_developh0",
     pre_post == "post" & q_number == "2.1" & year >= 2013 & year <= 2016 ~ "post_skill_developh0",
+    pre_post == "post" & q_number == "3.1" & year >= 2017 & year <= 2018 ~ "post_skill_developh0",
+    
+    pre_post == "pre" & q_number == "2.2" & year >= 2013 & year <= 2016 ~ "pre_skill_testh0",
+    pre_post == "pre" & q_number == "3.2" & year >= 2017 & year <= 2018 ~ "pre_skill_testh0",
+    pre_post == "post" & q_number == "2.2" & year >= 2013 & year <= 2016 ~ "post_skill_testh0",
+    pre_post == "post" & q_number == "3.2" & year >= 2017 & year <= 2018 ~ "post_skill_testh0",
+    
+    pre_post == "pre" & q_number == "2.3" & year >= 2013 & year <= 2016 ~ "pre_skill_evaluateh0",
+    pre_post == "pre" & q_number == "3.3" & year >= 2017 & year <= 2018 ~ "pre_skill_evaluateh0",
+    pre_post == "post" & q_number == "2.3" & year >= 2013 & year <= 2016 ~ "post_skill_evaluateh0",
+    pre_post == "post" & q_number == "3.3" & year >= 2017 & year <= 2018 ~ "post_skill_evaluateh0",
+    
+    pre_post == "pre" & q_number == "2.5" & year >= 2013 & year <= 2016 ~ "pre_skill_withothers",
+    pre_post == "pre" & q_number == "3.6" & year >= 2017 & year <= 2018 ~ "pre_skill_withothers",
+    pre_post == "post" & q_number == "2.5" & year >= 2013 & year <= 2016 ~ "post_skill_withothers",
+    pre_post == "post" & q_number == "3.6" & year >= 2017 & year <= 2018 ~ "post_skill_withothers",
+    
+    pre_post == "pre" & q_number == "3.1" & year >= 2013 & year <= 2016 ~ "pre_attitude_enthusiastic",
+    pre_post == "pre" & q_number == "4.1" & year >= 2017 & year <= 2018 ~ "pre_attitude_enthusiastic",
+    pre_post == "post" & q_number == "3.1" & year >= 2013 & year <= 2016 ~ "post_attitude_enthusiastic",
+    pre_post == "post" & q_number == "4.1" & year >= 2017 & year <= 2018 ~ "post_attitude_enthusiastic",
+    
+    pre_post == "pre" & q_number == "3.2" & year >= 2013 & year <= 2016 ~ "pre_attitude_discussing",
+    pre_post == "pre" & q_number == "4.2" & year >= 2017 & year <= 2018 ~ "pre_attitude_discussing",
+    pre_post == "post" & q_number == "3.2" & year >= 2013 & year <= 2016 ~ "post_attitude_discussing",
+    pre_post == "post" & q_number == "4.2" & year >= 2017 & year <= 2018 ~ "post_attitude_discussing",
+    
+    pre_post == "pre" & q_number == "3.3" & year >= 2013 & year <= 2016 ~ "pre_attitude_career",
+    pre_post == "pre" & q_number == "4.3" & year >= 2017 & year <= 2018 ~ "pre_attitude_career",
+    pre_post == "post" & q_number == "3.3" & year >= 2013 & year <= 2016 ~ "post_attitude_career",
+    pre_post == "post" & q_number == "4.3" & year >= 2017 & year <= 2018 ~ "post_attitude_career",
+    
+    pre_post == "pre" & q_number == "3.4" & year >= 2013 & year <= 2016 ~ "pre_attitude_understand",
+    pre_post == "pre" & q_number == "4.4" & year >= 2017 & year <= 2018 ~ "pre_attitude_understand",
+    pre_post == "post" & q_number == "3.4" & year >= 2013 & year <= 2016 ~ "post_attitude_understand",
+    pre_post == "post" & q_number == "4.4" & year >= 2017 & year <= 2018 ~ "post_attitude_understand",
+    
+    pre_post == "pre" & q_number == "3.5" & year >= 2013 & year <= 2016 ~ "pre_attitude_execute",
+    pre_post == "pre" & q_number == "4.5" & year >= 2017 & year <= 2018 ~ "pre_attitude_execute",
+    pre_post == "post" & q_number == "3.5" & year >= 2013 & year <= 2016 ~ "post_attitude_execute",
+    pre_post == "post" & q_number == "4.5" & year >= 2017 & year <= 2018 ~ "post_attitude_execute",
+    
+    pre_post == "pre" & q_number == "3.6" & year >= 2013 & year <= 2016 ~ "pre_attitude_withothers",
+    pre_post == "pre" & q_number == "4.6" & year >= 2017 & year <= 2018 ~ "pre_attitude_withothers",
+    pre_post == "post" & q_number == "3.6" & year >= 2013 & year <= 2016 ~ "post_attitude_withothers",
+    pre_post == "post" & q_number == "4.6" & year >= 2017 & year <= 2018 ~ "post_attitude_withothers",
+    
+    pre_post == "pre" & q_number == "4.1" & year >= 2013 & year <= 2016 ~ "pre_integration_connecting",
+    pre_post == "pre" & q_number == "5.1" & year >= 2017 & year <= 2018 ~ "pre_integration_connecting",
+    pre_post == "post" & q_number == "4.1" & year >= 2013 & year <= 2016 ~ "post_integration_connecting",
+    pre_post == "post" & q_number == "5.1" & year >= 2017 & year <= 2018 ~ "post_integration_connecting",
+    
+    pre_post == "pre" & q_number == "4.2" & year >= 2013 & year <= 2016 ~ "pre_integration_applying",
+    pre_post == "pre" & q_number == "5.2" & year >= 2017 & year <= 2018 ~ "pre_integration_applying",
+    pre_post == "post" & q_number == "4.2" & year >= 2013 & year <= 2016 ~ "post_integration_applying",
+    pre_post == "post" & q_number == "5.2" & year >= 2017 & year <= 2018 ~ "post_integration_applying",
+    
+    pre_post == "pre" & q_number == "5.6" & year >= 2013 & year <= 2016 ~ "pre_major_college_specific",
+    pre_post == "pre" & q_number == "6.6" & year == 2017 ~ "pre_major_college_specific",
+    pre_post == "pre" & q_number == "6.2" & year == 2018 ~ "pre_major_college_specific",
+    pre_post == "post" & q_number == "5.6" & year >= 2013 & year <= 2016 ~ "post_major_college_specific",
+    pre_post == "post" & q_number == "6.6" & year == 2017  ~ "post_major_college_specific",
+    pre_post == "post" & q_number == "6.2" & year == 2018 ~ "post_major_college_specific",
+    
+    pre_post == "pre" & q_number == "5.7" & year >= 2013 & year <= 2016 ~ "pre_major_major_specific",
+    pre_post == "pre" & q_number == "6.7" & year == 2017 ~ "pre_major_major_specific",
+    pre_post == "pre" & q_number == "6.3" & year == 2018 ~ "pre_major_major_specific",
+    pre_post == "post" & q_number == "5.7" & year >= 2013 & year <= 2016 ~ "post_major_major_specific",
+    pre_post == "post" & q_number == "6.7" & year == 2017  ~ "post_major_major_specific",
+    pre_post == "post" & q_number == "6.3" & year == 2018 ~ "post_major_major_specific",
     
     
-     
-    # Questions that are split in some years
+    # Questions that switch questions numbers and then switch from YES/NO to multiple choice 
+    pre_post == "pre" & q_number == "5.1" & year >= 2013 & year <= 2016 ~ "pre_major_marsci_yn",
+    pre_post == "pre" & q_number == "6.1" & year >= 2017  ~ "pre_major_marsci_yn",
+    pre_post == "pre" & q_number == "6.1" & year >= 2018  ~ "pre_major_marsci_multichoice",
+    pre_post == "post" & q_number == "5.1" & year >= 2013 & year <= 2016 ~ "post_major_marsci_yn",
+    pre_post == "post" & q_number == "6.1" & year >= 2017  ~ "post_major_marsci_yn",
+    pre_post == "post" & q_number == "6.1" & year >= 2018  ~ "post_major_multichoice",
+    
+    pre_post == "pre" & q_number == "5.2" & year >= 2013 & year <= 2016 ~ "pre_major_science_yn",
+    pre_post == "pre" & q_number == "6.2" & year >= 2017  ~ "pre_major_science_yn",
+    pre_post == "post" & q_number == "5.2" & year >= 2013 & year <= 2016 ~ "post_major_science_yn",
+    pre_post == "post" & q_number == "6.2" & year >= 2017  ~ "post_major_science_yn",
+    
+    pre_post == "pre" & q_number == "5.3" & year >= 2013 & year <= 2016 ~ "pre_major_notscience_yn",
+    pre_post == "pre" & q_number == "6.3" & year >= 2017  ~ "pre_major_notscience_yn",
+    pre_post == "post" & q_number == "5.3" & year >= 2013 & year <= 2016 ~ "post_major_notscience_yn",
+    pre_post == "post" & q_number == "6.3" & year >= 2017  ~ "post_major_notscience_yn",
+  
+    pre_post == "pre" & q_number == "5.4" & year >= 2013 & year <= 2016 ~ "pre_major_undecided_yn",
+    pre_post == "pre" & q_number == "6.4" & year >= 2017  ~ "pre_major_undecided_yn",
+    pre_post == "post" & q_number == "5.4" & year >= 2013 & year <= 2016 ~ "post_major_undecided_yn",
+    pre_post == "post" & q_number == "6.4" & year >= 2017  ~ "post_major_undecided_yn",
+    
+    pre_post == "pre" & q_number == "5.5" & year >= 2013 & year <= 2016 ~ "pre_major_nocollege_yn",
+    pre_post == "pre" & q_number == "6.5" & year >= 2017  ~ "pre_major_nocollege_yn",
+    pre_post == "post" & q_number == "5.5" & year >= 2013 & year <= 2016 ~ "post_major_nocollege_yn",
+    pre_post == "post" & q_number == "6.5" & year >= 2017  ~ "post_major_nocollege_yn",
+    
+    
+    
+    # Questions that are split vs pooled in different years
+    pre_post == "pre" & q_number == "1.3" & year >= 2013 & year <= 2016 ~ "pre_understanding_importance_pooled",
+    pre_post == "post" & q_number == "1.3" & year >= 2013 & year <= 2016 ~ "post_understanding_importance_pooled",
+    
+    
+    pre_post == "pre" & q_number == "2.2" & year >= 2017 & year <= 2018 ~ "pre_understanding_importance_split",
+    pre_post == "post" & q_number == "2.2" & year >= 2017 & year <= 2018 ~ "post_understanding_importance_split",
+    
+    pre_post == "pre" & q_number == "2.3" & year >= 2017 & year <= 2018 ~ "pre_understanding_importance_split",
+    pre_post == "post" & q_number == "2.3" & year >= 2017 & year <= 2018 ~ "post_understanding_importance_split",
+    
+    
+    
     pre_post == "pre" & (q_number == "1.1.4" | q_number == "1.1.3") & year >= 2017 & year <= 2018 ~ "pre_understanding_oceanacid_split",
-    pre_post == "post" & (q_number == "1.1.4" | q_number == "1.1.3") & year >= 2017 & year <= 2018 ~ "post_understanding_oceanacid_split"
-    
+    pre_post == "post" & (q_number == "1.1.4" | q_number == "1.1.3") & year >= 2017 & year <= 2018 ~ "post_understanding_oceanacid_split",
     pre_post == "pre" & q_number == "1.1.3" & year >= 2013 & year <= 2016 ~ "pre_understanding_oceanacid_pooled",
-    pre_post == "post" & q_number == "1.1.3" & year >= 2013 & year <= 2016 ~ "post_understanding_oceanacid_pooled"
+    pre_post == "post" & q_number == "1.1.3" & year >= 2013 & year <= 2016 ~ "post_understanding_oceanacid_pooled",
+    
+    
+    pre_post == "pre" & q_number == "1.1.6" & year >= 2013 & year <= 2016 ~ "pre_understanding_sound_pooled",
+    pre_post == "post" & q_number == "1.1.6" & year >= 2013 & year <= 2016  ~ "post_understanding_sound_pooled",
+    pre_post == "pre" & (q_number == "1.1.6" | q_number == "1.1.7") & year >= 2017 & year <= 2018 ~ "pre_understanding_sound_split",
+    pre_post == "post" & (q_number == "1.1.6" | q_number == "1.1.7") & year >= 2017 & year <= 2018 ~ "post_understanding_sound_split",
+    
+    
+    pre_post == "pre" & (q_number == "3.4" | q_number == "3.5") & year >= 2017 & year <= 2018 ~ "pre_skill_communicate_split",
+    pre_post == "post" & (q_number == "3.4" | q_number == "3.5") & year >= 2017 & year <= 2018 ~ "post_skill_communicate_split",
+    pre_post == "pre" & q_number == "2.4" & year >= 2013 & year <= 2016 ~ "pre_skill_communicate_pooled",
+    pre_post == "post" & q_number == "2.4" & year >= 2013 & year <= 2016 ~ "post_skill_communicate_pooled",
+
+    # Guest researcher INITIALS evaluations (only asked post) :
+    # AS
+    pre_post == "post" & q_number == "6.2" & year == 2013 ~ "prog_eval_guestspeaker_as",
+    # KR
+    pre_post == "post" & q_number == "6.4" & year == 2013 ~ "prog_eval_guestspeaker_kr",
+    # AP
+    pre_post == "post" & q_number == "6.4" & year == 2013 ~ "prog_eval_guestspeaker_ap",
+    pre_post == "post" & q_number == "6.9" & year == 2015 ~ "prog_eval_guestspeaker_ap",
+    # CT
+    pre_post == "post" & q_number == "6.9" & year == 2013 ~ "prog_eval_guestspeaker_ct",
+    # KB
+    pre_post == "post" & q_number == "6.3" & year == 2014 ~ "prog_eval_guestspeaker_kb",
+    pre_post == "post" & q_number == "6.4" & year == 2015 ~ "prog_eval_guestspeaker_kb",
+    # JF
+    pre_post == "post" & q_number == "6.6" & year == 2014 ~ "prog_eval_guestspeaker_jf",
+    # AS
+    pre_post == "post" & q_number == "6.8" & year == 2014 ~ "prog_eval_guestspeaker_as",
+    # KG
+    pre_post == "post" & q_number == "6.2" & (year == 2015 | year == 2016) ~ "prog_eval_guestspeaker_kg",
+    # CC
+    pre_post == "post" & q_number == "6.6" & year == 2015 ~ "prog_eval_guestspeaker_cc",
+    
     
     ))
 
