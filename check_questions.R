@@ -100,20 +100,68 @@ file.remove("question_list.csv")
 
 
 ### THe following creates a list of question IDs to be used for specifying the data structure
-question_id_list <- NA
+question_id_list = list()
 # Create list of questions and ids
 # start with i=2 because i=1 is ID column
 for (i in 2:length(names(question_list))){
   # get IDs just for those questions that are not NAs
   ids <- question_list$id[!is.na(question_list[,i])]
-  question_id_set <- paste(ids, names(question_list)[i], sep = "_")
-  question_id_list <- append(question_id_list, question_id_set)
+  question_id_set <- cbind.data.frame(ids, q_number = names(question_list)[i])
+  question_id_set <- question_id_set %>%
+    extract(col = ids, into = c("pre_post", "year"), regex = "^([a-z]+)(\\d+)$")
+  question_id_list[[i]] <- question_id_set
 }
 
-question_id_list <- question_id_list[-1]
+question_id_list <- rbindlist(question_id_list)
 
-write.csv(question_id_list, "question_id_list.csv", row.names = FALSE)
-# drive_upload("question_id_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload
+
+# Assign concepts to questions
+# See: notes_question_alignment google doc
+question_id_list <- question_id_list %>%
+  mutate(concept = case_when(
+    # Questions that stay consistent throughout
+    pre_post == "pre" & q_number == "1.1.1" ~ "pre_understanding_ecology",
+    pre_post == "post" & q_number == "1.1.1" ~ "post_understanding_ecology",
+    
+    pre_post == "pre" & q_number == "1.1.2" ~ "pre_understanding_sciprocess",
+    pre_post == "post" & q_number == "1.1.2" ~ "post_understanding_sciprocess",
+  
+    pre_post == "pre" & q_number == "1.1.5" ~ "pre_understanding_urchinfertilization",
+    pre_post == "post" & q_number == "1.1.5" ~ "post_understanding_urchinfertilization",
+    
+    pre_post == "pre" & q_number == "1.1.6" ~ "pre_understanding_sound",
+    pre_post == "post" & q_number == "1.1.6" ~ "post_understanding_sound",
+    
+        
+    # Questions that drop out or appear (need to filter by year)
+    pre_post == "pre" & q_number == "1.1.4" & year >= 2013 & year <= 2014 ~ "pre_understanding_aquaculture",
+    pre_post == "post" & q_number == "1.1.4" & year >= 2013 & year <= 2014 ~ "post_understanding_aquaculture",
+    
+    pre_post == "pre" & q_number == "1.1.4" & year >= 2015 & year <= 2016 ~ "pre_understanding_ethology",
+    pre_post == "post" & q_number == "1.1.4" & year >= 2015 & year <= 2016 ~ "post_understanding_ethology",
+    
+    pre_post == "pre" & q_number == "1.2" & year >= 2013 & year <= 2016 ~ "pre_understanding_life",
+    pre_post == "post" & q_number == "1.2" & year >= 2013 & year <= 2016 ~ "post_understanding_life",
+    
+    pre_post == "pre" & q_number == "1.3" & year >= 2013 & year <= 2016 ~ "pre_understanding_society",
+    pre_post == "post" & q_number == "1.3" & year >= 2013 & year <= 2016 ~ "post_understanding_society",
+    
+    pre_post == "pre" & q_number == "2.1" & year >= 2013 & year <= 2016 ~ "pre_skill_developh0",
+    pre_post == "post" & q_number == "2.1" & year >= 2013 & year <= 2016 ~ "post_skill_developh0",
+    
+    
+     
+    # Questions that are split in some years
+    pre_post == "pre" & (q_number == "1.1.4" | q_number == "1.1.3") & year >= 2017 & year <= 2018 ~ "pre_understanding_oceanacid_split",
+    pre_post == "post" & (q_number == "1.1.4" | q_number == "1.1.3") & year >= 2017 & year <= 2018 ~ "post_understanding_oceanacid_split"
+    
+    pre_post == "pre" & q_number == "1.1.3" & year >= 2013 & year <= 2016 ~ "pre_understanding_oceanacid_pooled",
+    pre_post == "post" & q_number == "1.1.3" & year >= 2013 & year <= 2016 ~ "post_understanding_oceanacid_pooled"
+    
+    ))
+
+write.csv(question_id_list, "question_id_data_structure.csv", row.names = FALSE)
+# drive_upload("question_id_data_structure.csv", path = as_dribble("REMS_SALG/")) # for initial upload
 # FILE ID for questions id list: 1UHFoY0kfIT2p2kHD9hzdNJLQWf2pGtvl
-drive_update(file = as_id("1UHFoY0kfIT2p2kHD9hzdNJLQWf2pGtvl"), media = "question_id_list.csv")
-file.remove("question_id_list.csv")
+drive_update(file = as_id("1VlgrGN4FKbaXEdquaK993dbYY6rlSOts"), media = "question_id_data_structure.csv")
+file.remove("question_id_data_structure.csv")
