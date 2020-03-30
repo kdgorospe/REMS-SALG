@@ -92,6 +92,8 @@ question_list <- question_list %>%
 question_list <- question_list %>%
   mutate_if(.predicate = is.factor, .funs = as.character)
 
+
+
 write.csv(question_list, "question_list.csv", row.names = FALSE)
 #drive_upload("question_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload
 # FILE ID for question_list: 1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc
@@ -106,7 +108,7 @@ question_id_list = list()
 for (i in 2:length(names(question_list))){
   # get IDs just for those questions that are not NAs
   ids <- question_list$id[!is.na(question_list[,i])]
-  question_id_set <- cbind.data.frame(ids, q_number = names(question_list)[i])
+  question_id_set <- cbind.data.frame(ids, q_number = names(question_list)[i], question = )
   question_id_set <- question_id_set %>%
     extract(col = ids, into = c("pre_post", "year"), regex = "^([a-z]+)(\\d+)$")
   question_id_list[[i]] <- question_id_set
@@ -268,10 +270,12 @@ question_id_list <- question_id_list %>%
     pre_post == "post" & q_number == "6.6" & year == 2017  ~ "post_major_college_specific",
     pre_post == "post" & q_number == "6.2" & year == 2018 ~ "post_major_college_specific",
     
-    pre_post == "pre" & q_number == "5.7" & year >= 2013 & year <= 2016 ~ "pre_major_major_specific",
+    pre_post == "pre" & q_number == "5.6" & year >= 2013 & year <= 2014 ~ "pre_major_major_specific",
+    pre_post == "pre" & q_number == "5.7" & year == 2015 ~ "pre_major_major_specific",
     pre_post == "pre" & q_number == "6.7" & year == 2017 ~ "pre_major_major_specific",
     pre_post == "pre" & q_number == "6.3" & year == 2018 ~ "pre_major_major_specific",
-    pre_post == "post" & q_number == "5.7" & year >= 2013 & year <= 2016 ~ "post_major_major_specific",
+    pre_post == "post" & q_number == "5.6" & year >= 2013 & year <= 2014 ~ "post_major_major_specific",
+    pre_post == "post" & q_number == "5.7" & year >= 2015 & year <= 2016 ~ "post_major_major_specific",
     pre_post == "post" & q_number == "6.7" & year == 2017  ~ "post_major_major_specific",
     pre_post == "post" & q_number == "6.3" & year == 2018 ~ "post_major_major_specific",
     
