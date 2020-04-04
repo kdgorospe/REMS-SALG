@@ -1,8 +1,25 @@
 # kdgorospe@gmail.com
 # Clean REMS data
-rm(list=ls())
-library(tidyverse)
-library(googledrive)
+
+
+require(tidyverse)
+require(googledrive)
+
+### THe following creates a list of question IDs to be used for specifying the data structure
+question_id_list = list()
+# Create list of questions and ids
+# start with i=2 because i=1 is ID column
+for (i in 2:length(names(question_list))){
+  question_id_set <- cbind.data.frame(ids = question_list$id[!is.na(question_list[,i])],
+                                      q_number = names(question_list)[i],
+                                      question = question_list[,i])
+  question_id_set <- question_id_set %>%
+    extract(col = ids, into = c("pre_post", "year"), regex = "^([a-z]+)(\\d+)$")
+  question_id_list[[i]] <- question_id_set
+}
+
+question_id_list <- rbindlist(question_id_list)
+
 
 # note: file IDs saved as text file in google drive
 # post data:
@@ -35,7 +52,7 @@ post_grep <- grep("POST", all_filenames)
 
 for (i in post_grep) {
   dat_year <- strsplit(all_filenames[i], split = " ")[[1]][1]
-  dat_object <- paste("post", dat_year, sep = "")
+  dat_object <- paste("a", dat_year, "post", sep = "_")
   assign(dat_object, read.csv(all_filenames[i]))
 }
 
@@ -44,7 +61,7 @@ pre_grep <- grep("PRE", all_filenames)
 
 for (i in pre_grep) {
   dat_year <- strsplit(all_filenames[i], split = " ")[[1]][1]
-  dat_object <- paste("pre", dat_year, sep = "")
+  dat_object <- paste("a", dat_year, "pre", sep = "_")
   assign(dat_object, read.csv(all_filenames[i]))
 }
 
@@ -55,5 +72,3 @@ for (i in post_grep) {
 for (i in pre_grep) {
   file.remove(all_filenames[i])
 }
-
-
