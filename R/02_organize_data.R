@@ -1,7 +1,6 @@
 # kdgorospe@gmail.com
 # Clean REMS data
 
-
 require(tidyverse)
 require(googledrive)
 
@@ -9,16 +8,18 @@ require(googledrive)
 question_id_list = list()
 # Create list of questions and ids
 # start with i=2 because i=1 is ID column
-for (i in 2:length(names(question_list))){
-  question_id_set <- cbind.data.frame(ids = question_list$id[!is.na(question_list[,i])],
-                                      q_number = names(question_list)[i],
-                                      question = question_list[,i])
-  question_id_set <- question_id_set %>%
-    extract(col = ids, into = c("pre_post", "year"), regex = "^([a-z]+)(\\d+)$")
+for (i in 2:length(names(question_dt))){
+  question_id_set <- tibble(id = question_dt$id,
+                            question = question_dt[,i]) %>%
+    drop_na() %>%
+    mutate(q_number = names(question_dt[i])) %>%
+    mutate(id = str_replace(id, pattern="q_", replacement = "")) %>%
+    separate(id, into = c("year", "test"))
   question_id_list[[i]] <- question_id_set
 }
 
-question_id_list <- rbindlist(question_id_list)
+question_id_dt <- rbindlist(question_id_list)
+
 
 
 # note: file IDs saved as text file in google drive
@@ -72,3 +73,31 @@ for (i in post_grep) {
 for (i in pre_grep) {
   file.remove(all_filenames[i])
 }
+
+# Combine and reshape answer data into tidy format 
+answer_objs <- apropos("a_20") # find all the "answer" objects
+answer_list = list()
+for (i in answer_objs){
+  answer_raw_i <- get(i)
+  answer_tidy_i <- answer_raw_i %>% 
+    select(-Elapsed) %>%
+    select_if(is.numeric) %>%
+    pivot_longer(cols = -Number,
+                 names_to = "q_number", 
+                 values_to = "answer") %>%
+    mutate(id = i) %>%
+    mutate(id = str_replace(id, pattern="a_", replacement = "")) %>%
+    separate(id, into = c("year", "test")) %>%
+    mutate(q_number = str_replace(q_number, pattern="X", replacement=""))
+  answer_list[[i]] <- answer_tidy_i
+}
+
+answer_dt <- rbindlist(answer_list)
+
+
+# Bind answer data to questions
+full_dat <- answer_dt %>%
+  inner_join(question_id_dt, by = c("year", "test", "q_number")) # inner_join, check that dim(full_dat) == dim(answer_dt)
+
+
+# START ASSIGNING "CONCEPTS" to each question based on grepping wording

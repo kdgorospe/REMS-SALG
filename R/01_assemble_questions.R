@@ -81,15 +81,15 @@ for (i in 1:length(years)){
   
 }
 
-question_list <- rbindlist(question_list, fill = TRUE)
+question_dt <- rbindlist(question_list, fill = TRUE)
 
 # Remove question 1.1 (header - not actually a question)
-question_list <- question_list %>%
+question_dt <- question_dt %>%
   select(-'1.1')
 
-question_list <- question_list %>%
+question_dt <- question_dt %>%
   mutate_if(.predicate = is.factor, .funs = as.character)
-  write.csv(question_list, "question_list.csv", row.names = FALSE)
+  write.csv(question_dt, "question_list.csv", row.names = FALSE)
 #drive_upload("question_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload
 # FILE ID for question_list: 1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc
 drive_update(file = as_id("1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc"), media = "question_list.csv")
