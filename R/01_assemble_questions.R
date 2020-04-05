@@ -1,5 +1,5 @@
 # Read-in questions and check for alignment
-
+rm(list=ls())
 require(tidyverse)
 require(googledrive)
 require(data.table)
@@ -68,6 +68,8 @@ for (i in 1:length(years)){
     question_dat <- question_dat %>%
       # Filter - Keep only columns "Number" and "Question"
       select(Number, Question) %>%
+      # IMPORTANT - remove inconsistent . at the end of certain questions
+      mutate(Question = str_replace_all(Question, pattern="\\.", replacement="")) %>%
       # Remove questions that don't have a "." (these are just heading numbers, not questions)
       filter(grepl("\\.", question_dat$Number)) %>%
       # Need to add an ID column so that pivot_wider knows to collapse all data into one row
@@ -89,7 +91,9 @@ question_dt <- question_dt %>%
 
 question_dt <- question_dt %>%
   mutate_if(.predicate = is.factor, .funs = as.character)
-  write.csv(question_dt, "question_list.csv", row.names = FALSE)
+
+
+write.csv(question_dt, "question_list.csv", row.names = FALSE)
 #drive_upload("question_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload
 # FILE ID for question_list: 1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc
 drive_update(file = as_id("1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc"), media = "question_list.csv")
