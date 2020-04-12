@@ -1,5 +1,7 @@
+# Import REMS data and assign "concept" labels to easily identify data across years
+# Example: Data about student attitudes towards a career in marine science are from question 3.3 in 2013-2016 and from question 4.3 in 2017-2018
 # kdgorospe@gmail.com
-# Clean REMS data
+
 
 require(tidyverse)
 require(googledrive)
@@ -74,7 +76,7 @@ for (i in pre_grep) {
   file.remove(all_filenames[i])
 }
 
-# Combine and reshape answer data into tidy format 
+# Combine and reshape answer data long format (each row is a single response by a single student)
 answer_objs <- apropos("a_20") # find all the "answer" objects
 answer_list = list()
 for (i in answer_objs){
@@ -106,25 +108,29 @@ coded_dat <- full_dat %>%
                              question=="The ecology of coral reefs" ~ "understanding_ecology",
                              question=="The scientific process" ~ "understandng_sciprocess",
                              question=="How increasing carbon dioxide in the atmosphere contributes to ocean acidification and how this might affect the health of corals and many marine organisms" ~ "understanding_oceanacid_pooled",
-                             question=="The effects of ocean acidification on marine organisms" | question=="The effects of atmospheric carbon dioxide on ocean chemistry" ~ "understanding_oceanacid_split",
+                             question=="The effects of ocean acidification on marine organisms" ~ "understanding_oceanacid_split_organisms",
+                             question=="The effects of atmospheric carbon dioxide on ocean chemistry" ~ "understanding_oceanacid_split_chemistry",
                              question=="The challenges of growing and harvesting fish in captivity, also known as aquaculture" ~ "understanding_aquaculture",
                              question=="How an ethologist records data about animal behavior and how the form of an animal and where it lives can influence its behavior" ~ "understanding_ethology",
                              question=="The effects of water quality on the fertilization processes of marine organisms, particularly sea urchins" ~ "understanding_fertilization",
                              question=="The physics of sound and how many marine organisms, such as snapping shrimp, use sound in the ocean for different purposes" ~ "understanding_sound_pooled",
-                             question=="The general physics of sound" | question=="How many marine organisms, such as snapping shrimp, use sound in the ocean" ~ "understanding_sound_split",
+                             question=="The general physics of sound" ~ "understanding_sound_split_general",
+                             question=="How many marine organisms, such as snapping shrimp, use sound in the ocean" ~ "understanding_sound_split_organisms",
                              question=="The significance of organism diversity in ecosystem health" ~ "understanding_diversity",
                              question=="The role of coral skeletal structure in reef ecology" ~ "understanding_coralskel",
                              question=="The effects of climate change on coral growth and survival" ~ "understanding_coralclimate",
                              question=="How ideas we will explore in this class relate to your own everyday life" | question=="Marine science concepts relate to my own everyday life" ~ "understanding_relatetolife",
                              question=="How studying this subject is important to society and helps people address real world issues" | question=="How studying marine science is important to society and helps people address real world issues" ~ "understanding_society_pooled",
-                             question=="The study of marine science helps people address real world issues" | question=="The study of marine science is important to society" ~ "understanding_society_split",
+                             question=="The study of marine science helps people address real world issues" ~ "understanding_society_split_realissues",
+                             question=="The study of marine science is important to society" ~ "understanding_society_split_society",
                              
                              # question heading: "SKILLS"
                              question=="Use the scientific process to ask a question and develop a hypothesis" ~ "skills_developH0",
                              question=="Develop an experiment to test a hypothesis" ~ "skills_testH0",
                              question=="Analyze and interpret experimental data to evaluate a hypothesis" ~ "skills_evalH0",
                              question=="Communicate the results of a research project in written and/or oral format" ~ "skills_communicate_pooled",
-                             question=="Communicate the results of a research project in written format" | question=="Communicate the results of a research project in oral format" ~ "skills_communicate_split",
+                             question=="Communicate the results of a research project in written format" ~ "skills_communicate_split_written",
+                             question=="Communicate the results of a research project in oral format" ~ "skills_communicate_split_oral",
                              question=="Work effectively with others" ~ "skills_withothers",
                              
                              # question heading: "ATTITUDES"
@@ -164,12 +170,13 @@ coded_dat <- full_dat %>%
                              question=="Guest researcher lecture Kelvin Gorospe and his presentation on coral reef ecology" ~ "evaluation_guestspeaker_coraleco_kg",
                              question=="Guest researcher lecture Keisha Bahr and her presentation on ocean acidification and reef growth" ~ "evaluation_guestspeaker_oceanacid_kb",
                              question=="Guest researcher lecture Ku'ulei Rogers and her presentation on ocean acidification and reef growth" ~ "evaluation_guestspeaker_oceanacid_kr",
-                             question=="Guest researcher lecture Christine Carrier and her presentation on ethology and shark sensory" ~ "evaluation_guespseaker_ethology_cc", 
+                             question=="Guest researcher lecture Christine Carrier and her presentation on ethology and shark sensory" ~ "evaluation_guestspeaker_ethology_cc", 
                              question=="Guest researcher lecture Jenny Fung and her presentation on sea urchin fertilzation and water quality" ~ "evaluation_guestspeaker_fertilization_jf",
                              question=="Guest researcher lecture Adam Smith and his presentation on the bioacoustics of marine mammals" ~ "evaluation_guestspeaker_bioacoustics_as",
                              question=="Guest researcher lecture Clyde Tamaru and his presentation on aquaponics and aquaculture" ~ "evaluation_guestspeaker_aquaculture_ct",
                              question=="Guest researcher lecture Aude Pacini and her presentation on the bioacoustics of marine mammals" ~ "evaluation_guestspeaker_bioacoustics_ap",
-                             grepl(pattern="Career day in class presentations*", full_dat$question) ~ "evaluation_careerday"))
+                             grepl(pattern="Career day in class presentations*", full_dat$question) ~ "evaluation_careerday")) %>%
+  arrange(concept, test, q_number, year)
 
 
 write.csv(coded_dat, "coded_dat.csv", row.names = FALSE)

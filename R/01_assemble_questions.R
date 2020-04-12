@@ -1,4 +1,6 @@
-# Read-in questions and check for alignment
+# Import questions and line them up across years
+# kdgorospe@gmail.com
+
 rm(list=ls())
 require(tidyverse)
 require(googledrive)
