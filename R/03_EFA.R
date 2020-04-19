@@ -54,6 +54,8 @@ drive_update(file = as_id("11by0zbkkdEvmJYb6WbRgWqPLfYq_n7rS"), media = "corrplo
 file.remove("corrplot.pdf")
 
 
+## From Godwin 2013: Test for normality: The skew and kurtosis were evaluated for each item to ensure that the assumptions of multivariate normality were not severely violated 
+## Use describe() to examine normality of each variable ()
 ## specify that we should use the describe function from psych package (shares namespace with other packages, e.g., Hmisc)
 dat_describe <- psych::describe(dat_analysis[,4:dim(dat_analysis)[2]])
 
@@ -105,6 +107,7 @@ file.remove("pre_screeplot.pdf")
 
 # NOTE: set nfactors to results from Scree plot
 # NOTE: rotate = "promax" is what Goodwin 2016 used
+# NOTE: fm (factor method, aka factor extraction method): 
 # A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal).
 EFA_pre_cordat_5factor <- fa(r = cor_dat_pre, nfactors = 5, rotate = "promax", fm = "ml") 
 
