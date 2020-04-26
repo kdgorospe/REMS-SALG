@@ -6,15 +6,18 @@ library(corrplot)
 library(GPArotation) # needed for promax rotation in fa function
 
 
+
+
+
 ### REFERENCE: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
 # FIX IT - check does Likert scale remain the same across years?
 # Arrange data into tidy format (each row is a single student)
-tidy_dat <- coded_dat %>%
-  select(Number, answer, year, test, concept) %>%
-  pivot_wider(values_from = answer, names_from = concept, id_cols = c(Number, year, test)) %>% # use values_fn = list(val = length) to identify coding duplicates
-  arrange(year, test, Number) %>%
-  # response value of 9 corresponsds to "NA"
-  mutate_all(~na_if(., 9))
+tidy_dat <- coded_and_standardized_dat %>%
+  select(Number, pooled_answer, year, test, concept) %>%
+  pivot_wider(values_from = pooled_answer, names_from = concept, id_cols = c(Number, year, test)) %>% # use values_fn = list(val = length) to identify coding duplicates
+  arrange(year, test, Number)
+
+
 
 # Correlations:
 cormatrix <- cor(tidy_dat[,4:dim(tidy_dat)[2]], use="pairwise.complete.obs")

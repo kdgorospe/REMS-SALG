@@ -179,9 +179,99 @@ coded_dat <- full_dat %>%
   arrange(concept, test, q_number, year)
 
 
+
 write.csv(coded_dat, "coded_dat.csv", row.names = FALSE)
 #drive_upload("coded_dat.csv", path = as_dribble("REMS_SALG/")) # for initial upload
 # FILE ID for coded_dat: 1ztPIrSmNdy0o-0yJpL_oDybcEUEj1vYEy2zrLm0PhyE
 drive_update(file = as_id("1ztPIrSmNdy0o-0yJpL_oDybcEUEj1vYEy2zrLm0PhyE"), media = "coded_dat.csv")
 file.remove("coded_dat.csv")
 
+
+
+
+### Before doing any analysis, clean data: 
+
+# 1 - Response value 9 = NA
+coded_and_standardized_dat <- coded_dat %>%
+  mutate_all(~na_if(., 9))
+
+# 2 - Deal with questions with changing Likert Scales
+# For 2017 and 2018, these questions changed to Likert scale ONE to SIX: understanding_relatetolife, understanding_society_split_realissues, understanding_society_split_society (additionally, the latter two were "pooled" but we'll deal with that in the next cleaning step)
+# Scale them to be between ONE and SIX by multiplying all responses by 6/5
+# View the problem:
+#coded_and_standardized_dat %>%
+#  filter(str_detect(concept, pattern = "understanding_relatetolife|understanding_society_pooled|understanding_society_split")) %>%
+#  group_by(concept, year) %>%
+#  summarise(max = max(answer, na.rm = TRUE))
+
+# Scale 2017 and 2018 data to be ONE to SIX
+coded_and_standardized_dat <- coded_and_standardized_dat %>%
+  mutate(answer = case_when((str_detect(concept, "understanding_relatetolife") & year>=2017) ~ answer * 6/5,
+                            (str_detect(concept, "understanding_society_split_realissues") & year>=2017) ~ answer * 6/5,
+                            (str_detect(concept, "understanding_society_split_society") & year>=2017) ~ answer * 6/5,
+                            TRUE ~ as.numeric(answer)))
+
+# 3 - DEAL WITH inconsistent questions:
+# SPLIT vs POOLED questions: In some years, the question wording is: "Communicate the results of a research project in written and/or oral format skills" (POOLED) 
+# while in other years the wording is split: "Communicate the results of a research project in written format" and "Communicate the results of a research project in oral format"
+
+# View pooled vs split data:
+#coded_dat %>%
+#  filter(str_detect(coded_dat$concept, "pooled"))
+#coded_dat %>% 
+#  filter(str_detect(coded_dat$concept, "split"))
+
+# Mutate the column "concept" so that corresponding "split" questions have the same label, allowing them to be grouped together, and for their answers to be averaged
+# i.e., mutate "skills_communicate_split_written" and "skills_communicate_split_oral" to "skills_communicate_split"
+
+coded_and_standardized_dat <- coded_and_standardized_dat %>%
+  mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="(split_.*)", replacement = "split"),
+                             TRUE ~ concept)) %>%
+  group_by(Number, year, test, concept) %>%
+  summarize(pooled_answer = mean(answer), n_question = n()) 
+
+# Now that answers have been pooled, mutate column "concept" so that "split" questions now say "pooled" (indicating that they can be analyzed together downstream)
+coded_and_standardized_dat <- coded_and_standardized_dat %>%
+  mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="split", replacement = "pooled"),
+                             TRUE ~ concept))
+
+# 4 - Deal with questions about Major and College plans which changed from Yes/NO (2013 - 2017) to multiple choice in 2018
+# CAVEAT: when the question was YES/NO, students were allowed to indicate multiple majors (they could say yes multiple times as opposed to just selecting one major)
+# View the problem:
+#coded_and_standardized_dat %>%
+#  filter(concept %in% c("major_marinesci_yesno", "major_notscience_yesno", "major_science_yesno", "major_undecided_yesno", "major_unsurecollege_yesno")) %>%
+#  arrange(year, test, Number) %>%
+#  print(n=dim(.)[1])
+
+
+# Code below partially addresses this by converting their response to the MULTIPLE CHOICE question into YES answers
+# But doesn't assume whether the student would answer YES/NO to any of the other multiple choices
+# Example: if student said their preferred major was Marine Science (multiple choice), this is converted to a "YES" to the question, Are you interested in majoring in Marine science? 
+# But leaves BLANK all the other questions (Are you interested in majoring in a science? non-science? undecided? unsure about college?)
+multichoice_to_yesno <- coded_and_standardized_dat %>%
+  filter(concept == "major_multiplechoice") %>%
+  # Use their answer to the multiple choice to assign corresponding YES/NO concept
+  mutate(concept = case_when(pooled_answer == 1 ~ "major_marinesci_yesno",
+                             pooled_answer == 2 ~ "major_science_yesno",
+                             pooled_answer == 3 ~ "major_notscience_yesno",
+                             pooled_answer == 4 ~ "major_undecided_yesno",
+                             pooled_answer == 5 ~ "major_unsurecollege_yesno",
+                             TRUE ~ concept)) %>%
+  # Now convert all answers to YES = 1
+  mutate(pooled_answer = 1)
+
+
+# Now filter out old answers (multiple choice) and replace them with the new YES/NO versions:
+coded_and_standardized_dat <- coded_and_standardized_dat %>% 
+  filter(concept != "major_multiplechoice") %>%
+  rbind(multichoice_to_yesno) %>%
+  arrange(concept, test, year, Number)
+
+
+write.csv(coded_and_standardized_dat, "coded_and_standardized_dat.csv", row.names = FALSE)
+#drive_upload("coded_and_standardized_dat.csv", path = as_dribble("REMS_SALG/")) # for initial upload
+# FILE ID for coded_dat: 1NfWblXuSW_gwPqfteP9tzxe5A96kI94uuJb-7PGyCcE
+drive_update(file = as_id("1NfWblXuSW_gwPqfteP9tzxe5A96kI94uuJb-7PGyCcE"), media = "coded_and_standardized_dat.csv")
+file.remove("coded_and_standardized_dat.csv")
+
+  
