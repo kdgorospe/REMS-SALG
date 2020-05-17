@@ -5,57 +5,62 @@ library(psych)
 library(corrplot)
 library(GPArotation) # needed for promax rotation in fa function
 
-
-
-
-
 ### REFERENCE: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
-# FIX IT - check does Likert scale remain the same across years?
 # Arrange data into tidy format (each row is a single student)
-tidy_dat <- coded_and_standardized_dat %>%
+tidy_dat_all <- coded_and_standardized_dat %>%
   select(Number, pooled_answer, year, test, concept) %>%
   pivot_wider(values_from = pooled_answer, names_from = concept, id_cols = c(Number, year, test)) %>% # use values_fn = list(val = length) to identify coding duplicates
-  arrange(year, test, Number)
+  arrange(year, test, Number) %>%
+  ungroup() 
+
+# Create subsets of pre and post datasets - filter both subsets to the same questions, so they are comparable
+tidy_dat_pre <- tidy_dat_all %>%
+  filter(test=="pre") %>%
+  # REMOVE ALL EVALUATION QUESTIONS (only run in the post test, and not part of our pre vs post framework)
+  select(!starts_with("evaluation")) %>% # note: for some reason starts_with("evaluation") == FALSE does not work (not tidy?)
+  # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
+  select(-c("understanding_ethology", "understanding_aquaculture"))
+
+tidy_dat_post <- tidy_dat_all %>%
+  filter(test=="post") %>% 
+  # REMOVE ALL EVALUATION QUESTIONS (only run in the post test, and not part of our pre vs post framework)
+  select(!starts_with("evaluation")) %>% 
+  # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
+  select(-c("understanding_ethology", "understanding_aquaculture"))
+  
+  
+
+time_point <- c("pre", "post")
+
+for (i in time_point){
+  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
+  cor_matrix <- cor(tidy_dat[,4:dim(tidy_dat)[2]], use="pairwise.complete.obs")
+  cor_csv <- paste("cormatrix_", i, ".csv", sep="")
+  write.csv(cor_matrix, cor_csv, row.names = TRUE)
+  # drive_upload(cor_csv, path = as_dribble("REMS_SALG/")) # for initial upload
+  
+  cor_pdf <- paste("corrplot_", i, ".pdf", sep="")
+  pdf(cor_pdf)
+  corrplot(cor_matrix, tl.col="black", tl.cex=0.75)
+  dev.off()
+  #drive_upload(cor_pdf, path = as_dribble("REMS_SALG/")) # for initial upload
+  
+  if (i=="pre"){ 
+    drive_update(file = as_id("1mDIq5JfDSuiZIAehyy6UZX37l-5cgU-t36pM87Iix8s"), media = cor_csv)
+    drive_update(file = as_id("1FMLHbE7sbnLbqHm6eeiWtU-O_xVks66-"), media = cor_pdf)
+  }
+  if (i=="post"){ 
+    drive_update(file = as_id("1yNpDJoBgd_taaJ8eO1klt4mKwEbEoj5b2UhTfsbpXYM"), media = cor_csv)
+    drive_update(file = as_id("10qsyqLTg4GqHFrGIARd6m1wconWu3jpT"), media = cor_pdf)
+  }
+  file.remove(cor_csv)
+  file.remove(cor_pdf)
+  
+}
 
 
 
-# Correlations:
-cormatrix <- cor(tidy_dat[,4:dim(tidy_dat)[2]], use="pairwise.complete.obs")
-write.csv(cormatrix, "cormatrix.csv", row.names = TRUE)
-#drive_upload("cormatrix.csv", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for cormatrix.csv: 11J3A5fsuRS9bvB6Kun5tLrhexwE-tJZS
-drive_update(file = as_id("11J3A5fsuRS9bvB6Kun5tLrhexwE-tJZS"), media = "cormatrix.csv")
-file.remove("cormatrix.csv")
-
-index_no_pairs <- which(is.na(cormatrix), arr.ind = TRUE)
-vars_no_pairs <- cbind(rownames(cormatrix)[index_no_pairs[,1]], colnames(cormatrix)[index_no_pairs[,2]])
-vars_no_pairs
-
-# Inspect correlation table, remove variables with limited pairwise comparisons: 
-# evaluation_aquaculture
-# evaluation_ethology
-# all evaluation_guestspeakers
-# evaluation_plankton
-
-# FIX IT - for now, remove major_multiplechoice and major_yesno and all variables that were either pooled or split - will need to recode all of these later
-dat_analysis <- tidy_dat %>%
-  select(-c(evaluation_aquaculture, evaluation_ethology, evaluation_planktoneco)) %>%
-  select(-c(understanding_aquaculture, understanding_ethology)) %>%
-  select_if(grepl("guestspeaker", names(.))==FALSE) %>%
-  select_if(grepl("major", names(.))==FALSE) %>%
-  select_if(grepl("pooled", names(.))==FALSE) %>%
-  select_if(grepl("split", names(.))==FALSE)
-
-# Plot shows clumps of correlated variables - evidence that common factors exist
-pdf(file="corrplot.pdf")
-corrplot(cor(dat_analysis[,4:dim(dat_analysis)[2]], use="pairwise.complete.obs"), order="hclust", tl.col="black", tl.cex=0.75)
-dev.off()
-
-#drive_upload("corrplot.pdf", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for corrplot.pdf: 11by0zbkkdEvmJYb6WbRgWqPLfYq_n7rS
-drive_update(file = as_id("11by0zbkkdEvmJYb6WbRgWqPLfYq_n7rS"), media = "corrplot.pdf")
-file.remove("corrplot.pdf")
-
+## LEFT OFF HERE - need to continue splitting analyses for pre and post
 
 ## From Godwin 2013: Test for normality: The skew and kurtosis were evaluated for each item to ensure that the assumptions of multivariate normality were not severely violated 
 ## Use describe() to examine normality of each variable ()
