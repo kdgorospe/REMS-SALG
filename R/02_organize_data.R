@@ -1,5 +1,5 @@
 # Import REMS data and assign "concept" labels to easily identify data across years
-# Example: Data about student attitudes towards a career in marine science are from question 3.3 in 2013-2016 and from question 4.3 in 2017-2018
+# Example: Data about student attitudes towards a career in marine science are from question 3.3 in 2013-2016 and from question 4.3 in 2017-2018 is given the label "attitudes_career"
 # kdgorospe@gmail.com
 
 
@@ -166,7 +166,7 @@ coded_dat <- full_dat %>%
                              question=="As a result of my group research project experience, I feel confident that I can execute a research project on my own" ~ "evaluation_groupresearch_confident",
                              
                              # question heading: "EVALUATION (Guest lecturers and career day)"
-                             question=="Guest researcher lecture Ariana Snow and her presentation on coral reef monitoring" ~  "evalution_guestspeaker_coraleco_as",
+                             question=="Guest researcher lecture Ariana Snow and her presentation on coral reef monitoring" ~  "evaluation_guestspeaker_coraleco_as",
                              question=="Guest researcher lecture Kelvin Gorospe and his presentation on coral reef ecology" ~ "evaluation_guestspeaker_coraleco_kg",
                              question=="Guest researcher lecture Keisha Bahr and her presentation on ocean acidification and reef growth" ~ "evaluation_guestspeaker_oceanacid_kb",
                              question=="Guest researcher lecture Ku'ulei Rogers and her presentation on ocean acidification and reef growth" ~ "evaluation_guestspeaker_oceanacid_kr",
@@ -204,7 +204,7 @@ coded_and_standardized_dat <- coded_dat %>%
 #  group_by(concept, year) %>%
 #  summarise(max = max(answer, na.rm = TRUE))
 
-# Scale 2017 and 2018 data to be ONE to SIX
+# Scale 2017 and 2018 data to be ONE to SIX (2017 and 2018 data Likert scale was 1 to 5; but prior to 2017, Likert scale was 1 to 6)
 coded_and_standardized_dat <- coded_and_standardized_dat %>%
   mutate(answer = case_when((str_detect(concept, "understanding_relatetolife") & year>=2017) ~ answer * 6/5,
                             (str_detect(concept, "understanding_society_split_realissues") & year>=2017) ~ answer * 6/5,
