@@ -16,45 +16,75 @@ tidy_dat_all <- coded_and_standardized_dat %>%
 # Create subsets of pre and post datasets - filter both subsets to the same questions, so they are comparable
 tidy_dat_pre <- tidy_dat_all %>%
   filter(test=="pre") %>%
-  # REMOVE ALL EVALUATION QUESTIONS (only run in the post test, and not part of our pre vs post framework)
+  # REMOVE ALL EVALUATION QUESTIONS (only asked in the post test, and not part of our pre vs post framework)
   select(!starts_with("evaluation")) %>% # note: for some reason starts_with("evaluation") == FALSE does not work (not tidy?)
   # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
   select(-c("understanding_ethology", "understanding_aquaculture"))
 
 tidy_dat_post <- tidy_dat_all %>%
   filter(test=="post") %>% 
-  # REMOVE ALL EVALUATION QUESTIONS (only run in the post test, and not part of our pre vs post framework)
+  # REMOVE ALL EVALUATION QUESTIONS (only asked in the post test, and not part of our pre vs post framework)
   select(!starts_with("evaluation")) %>% 
   # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
   select(-c("understanding_ethology", "understanding_aquaculture"))
   
   
 
-time_point <- c("pre", "post")
+# Calculate and plot correlations
+# NOTE ON CORRELATION RESULTS: Scaling vs not scaling the variables does not change results of correlation matrix
 
+
+time_point <- c("pre", "post")
 for (i in time_point){
   tidy_dat <- get(paste("tidy_dat_", i, sep=""))
-  cor_matrix <- cor(tidy_dat[,4:dim(tidy_dat)[2]], use="pairwise.complete.obs")
+  cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
+  cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
   cor_csv <- paste("cormatrix_", i, ".csv", sep="")
   write.csv(cor_matrix, cor_csv, row.names = TRUE)
   # drive_upload(cor_csv, path = as_dribble("REMS_SALG/")) # for initial upload
   
-  cor_pdf <- paste("corrplot_", i, ".pdf", sep="")
-  pdf(cor_pdf)
-  corrplot(cor_matrix, tl.col="black", tl.cex=0.75)
+  # NOTE: option use = "pairwise.complete.obs" computes correlations for each pair of columns using vectors formed by omitting rows with missing values on a pairwise basis
+  # Caveat: this means each column vector varies depending on its pairing - and for small datasets can lead to weird results
+  # See: http://bwlewis.github.io/covar/missing.html
+  
+  # Calculate significance tests
+  p_95 <- cor.mtest(cor_dat, conf.level = 0.95)
+  p_csv <- paste("cor_pmatrix_", i, ".csv", sep = "")
+  write.csv(p_95$p, p_csv, row.names = TRUE)
+  # drive_upload(p_csv, path = as_dribble("REMS_SALG/")) # for initial upload
+  
+  
+  cor_pdf_plain <- paste("corrplot_", i, "_plain.pdf", sep="")
+  pdf(cor_pdf_plain)
+  corrplot(cor_matrix, tl.col="black", tl.cex=0.75) # insig = "label_sig" means label the significant p-values; otherwise option is to label the insignificant values 
   dev.off()
-  #drive_upload(cor_pdf, path = as_dribble("REMS_SALG/")) # for initial upload
+  #drive_upload(cor_pdf_plain, path = as_dribble("REMS_SALG/")) # for initial upload
+  
+  cor_pdf_x_insig <- paste("corrplot_", i, "_x_insig.pdf", sep="")
+  pdf(cor_pdf_x_insig)
+  corrplot(cor_matrix, p.mat = p_95$p, 
+           sig.level = 0.05, pch.cex = 0.8,
+           tl.col="black", tl.cex=0.75) 
+  dev.off()
+  #drive_upload(cor_pdf_x_insig, path = as_dribble("REMS_SALG/")) # for initial upload
+
   
   if (i=="pre"){ 
     drive_update(file = as_id("1mDIq5JfDSuiZIAehyy6UZX37l-5cgU-t36pM87Iix8s"), media = cor_csv)
-    drive_update(file = as_id("1FMLHbE7sbnLbqHm6eeiWtU-O_xVks66-"), media = cor_pdf)
+    drive_update(file = as_id("1FMLHbE7sbnLbqHm6eeiWtU-O_xVks66-"), media = cor_pdf_plain)
+    drive_update(file = as_id("1p0JbznqjciYAZlI4DEJ9SxOYQtlXoKEM"), media = cor_pdf_x_insig)
+    drive_update(file = as_id("1UPWKsR3ijvEPRHN4JgbBc-CMhzKsfdtd"), media = p_csv)
   }
   if (i=="post"){ 
     drive_update(file = as_id("1yNpDJoBgd_taaJ8eO1klt4mKwEbEoj5b2UhTfsbpXYM"), media = cor_csv)
-    drive_update(file = as_id("10qsyqLTg4GqHFrGIARd6m1wconWu3jpT"), media = cor_pdf)
+    drive_update(file = as_id("10qsyqLTg4GqHFrGIARd6m1wconWu3jpT"), media = cor_pdf_plain)
+    drive_update(file = as_id("1CZHbdvW1UF6Lc-lwhXfDxjsgPa4FalqL"), media = cor_pdf_x_insig)
+    drive_update(file = as_id("1QgpTdt7NaBWE6qdHdnhmb25fOnyAw6-B"), media = p_csv)
   }
   file.remove(cor_csv)
-  file.remove(cor_pdf)
+  file.remove(cor_pdf_plain)
+  file.remove(cor_pdf_x_insig)
+  file.remove(p_csv)
   
 }
 

@@ -1,4 +1,4 @@
-# Import REMS data and assign "concept" labels to easily identify data across years
+# Import REMS data (student responses) and assign "concept" labels to more easily identify questions across years
 # Example: Data about student attitudes towards a career in marine science are from question 3.3 in 2013-2016 and from question 4.3 in 2017-2018 is given the label "attitudes_career"
 # kdgorospe@gmail.com
 
@@ -228,14 +228,23 @@ coded_and_standardized_dat <- coded_and_standardized_dat %>%
   mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="(split_.*)", replacement = "split"),
                              TRUE ~ concept)) %>%
   group_by(Number, year, test, concept) %>%
-  summarize(pooled_answer = mean(answer), n_question = n()) 
+  summarize(pooled_answer = mean(answer), n_question = n()) %>%
+  ungroup()
 
 # Now that answers have been pooled, mutate column "concept" so that "split" questions now say "pooled" (indicating that they can be analyzed together downstream)
 coded_and_standardized_dat <- coded_and_standardized_dat %>%
   mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="split", replacement = "pooled"),
                              TRUE ~ concept))
 
-# 4 - Deal with questions about Major and College plans which changed from Yes/NO (2013 - 2017) to multiple choice in 2018
+# 4 - Switch answers for Yes=1/No=2 to Yes=2/No=1 for all questions: Are you interested in majoring in Marine Science? Not science? Science? Undecided? Unsure about College?
+# i.e., direction of variable is such that response is larger when positively associated with science to match direction of Likert scale variables 
+
+coded_and_standardized_dat <- coded_and_standardized_dat %>%
+  mutate(pooled_answer = case_when(str_detect(concept, "yesno") & pooled_answer == 1 ~ 2,
+                                   str_detect(concept, "yesno") & pooled_answer == 2 ~ 1,
+                                   TRUE ~ pooled_answer))
+
+# 5 - Deal with questions about Major and College plans which changed from Yes/NO (2013 - 2017) to multiple choice in 2018
 # CAVEAT: when the question was YES/NO, students were allowed to indicate multiple majors (they could say yes multiple times as opposed to just selecting one major)
 # View the problem:
 #coded_and_standardized_dat %>%
@@ -247,7 +256,7 @@ coded_and_standardized_dat <- coded_and_standardized_dat %>%
 # Code below partially addresses this by converting their response to the MULTIPLE CHOICE question into YES answers
 # But doesn't assume whether the student would answer YES/NO to any of the other multiple choices
 # Example: if student said their preferred major was Marine Science (multiple choice), this is converted to a "YES" to the question, Are you interested in majoring in Marine science? 
-# But leaves BLANK all the other questions (Are you interested in majoring in a science? non-science? undecided? unsure about college?)
+# But rather than assuming that the student would answer "NO" to the other questions (Are you interested in majoring in a science? non-science? undecided? unsure about college?), we just leave these BLANK
 multichoice_to_yesno <- coded_and_standardized_dat %>%
   filter(concept == "major_multiplechoice") %>%
   # Use their answer to the multiple choice to assign corresponding YES/NO concept
@@ -257,8 +266,8 @@ multichoice_to_yesno <- coded_and_standardized_dat %>%
                              pooled_answer == 4 ~ "major_undecided_yesno",
                              pooled_answer == 5 ~ "major_unsurecollege_yesno",
                              TRUE ~ concept)) %>%
-  # Now convert all answers to YES = 1
-  mutate(pooled_answer = 1)
+  # Now convert all answers to YES = 2
+  mutate(pooled_answer = 2)
 
 
 # Now filter out old answers (multiple choice) and replace them with the new YES/NO versions:
