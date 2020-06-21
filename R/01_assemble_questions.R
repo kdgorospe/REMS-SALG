@@ -93,9 +93,13 @@ question_dt <- rbindlist(question_list, fill = TRUE)
 question_dt <- question_dt %>%
   select(-'1.1')
 
-question_dt <- question_dt %>%
-  mutate_if(.predicate = is.factor, .funs = as.character)
+# if question_dt is kept as data.table, question_id_dt For Loop in 02_organize-data.R would return the following error message:
+# Error in vapply(x, is_complete, logical(nrow(x))) : values must be length 12, but FUN(X[[2]]) result is length 1 
+question_dt <- as.data.frame(question_dt)
 
+# OLD: 
+#question_dt <- question_dt %>%
+#  mutate_if(.predicate = is.factor, .funs = as.character)
 
 write.csv(question_dt, "question_list.csv", row.names = FALSE)
 #drive_upload("question_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload

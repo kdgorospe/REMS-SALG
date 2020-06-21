@@ -19,20 +19,19 @@ tidy_dat_pre <- tidy_dat_all %>%
   # REMOVE ALL EVALUATION QUESTIONS (only asked in the post test, and not part of our pre vs post framework)
   select(!starts_with("evaluation")) %>% # note: for some reason starts_with("evaluation") == FALSE does not work (not tidy?)
   # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
-  select(-c("understanding_ethology", "understanding_aquaculture"))
+  select(-c(understanding_ethology, understanding_aquaculture, understanding_coralclimate, understanding_coralskel, understanding_diversity)) 
 
 tidy_dat_post <- tidy_dat_all %>%
   filter(test=="post") %>% 
   # REMOVE ALL EVALUATION QUESTIONS (only asked in the post test, and not part of our pre vs post framework)
   select(!starts_with("evaluation")) %>% 
   # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
-  select(-c("understanding_ethology", "understanding_aquaculture"))
+  select(-c(understanding_ethology, understanding_aquaculture, understanding_coralclimate, understanding_coralskel, understanding_diversity)) 
   
   
-
+###################################################################################################################
 # Calculate and plot correlations
 # NOTE ON CORRELATION RESULTS: Scaling vs not scaling the variables does not change results of correlation matrix
-
 
 time_point <- c("pre", "post")
 for (i in time_point){
@@ -62,10 +61,12 @@ for (i in time_point){
   
   cor_pdf_x_insig <- paste("corrplot_", i, "_x_insig.pdf", sep="")
   pdf(cor_pdf_x_insig)
-  corrplot(cor_matrix, p.mat = p_95$p, 
-           sig.level = 0.05, pch.cex = 0.8,
-           tl.col="black", tl.cex=0.75) 
+  corrplot(cor_matrix, p.mat = p_95$p, sig.level = 0.05, tl.col = "black", tl.cex = 0.75, insig = "blank")
   dev.off()
+  
+  # ALTERNATIVELY, place an "X" wherever values are insiginficant
+  #corrplot(cor_matrix, p.mat = p_95$p, sig.level = 0.05, pch.cex = 0.8, tl.col="black", tl.cex=0.75) 
+  
   #drive_upload(cor_pdf_x_insig, path = as_dribble("REMS_SALG/")) # for initial upload
 
   
@@ -88,60 +89,94 @@ for (i in time_point){
   
 }
 
-
-
-## LEFT OFF HERE - need to continue splitting analyses for pre and post
-
-## From Godwin 2013: Test for normality: The skew and kurtosis were evaluated for each item to ensure that the assumptions of multivariate normality were not severely violated 
+###################################################################################################################
+# TEST FOR NORMALITY
+## From Godwin 2013 for EFA: The skew and kurtosis were evaluated for each item to ensure that the assumptions of multivariate normality were not severely violated 
+## Do this separately for pre and post
 ## Use describe() to examine normality of each variable ()
-## specify that we should use the describe function from psych package (shares namespace with other packages, e.g., Hmisc)
-dat_describe <- psych::describe(dat_analysis[,4:dim(dat_analysis)[2]])
+## caution: describe() shares namespace with other packages (e.g., Hmisc); use psych::describe to specify
 
-# According to Goodwin 2016, these variables should be removed because they violate assumption of normality: 
-dat_describe[abs(dat_describe$skew) >= 2,]
-dat_describe[abs(dat_describe$kurtosis) >= 7,]
-
-write.csv(dat_describe, "dat_describe.csv", row.names = TRUE)
-#drive_upload("dat_describe.csv", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for dat_describe.csv: 1F8VKg7lBRVEJ26Q77lFAgEn0n19TWPPJ
-drive_update(file = as_id("1F8VKg7lBRVEJ26Q77lFAgEn0n19TWPPJ"), media = "dat_describe.csv")
-file.remove("dat_describe.csv")
-
-
-
-dat_scaled <- scale(dat_analysis[,4:dim(dat_analysis)[2]], center=TRUE, scale=TRUE)
-dat_scaled <- cbind(dat_analysis[,1:3], dat_scaled)
-
-# FIX IT - should i rerun describe and corrplot on separate pre and post dataframes?
-# Split pre and post, do separate analyses for each
-scaled_pre <- dat_scaled %>%
-  filter(test == "pre") %>%
-  # For PRE data, remove "evaluation" questions, these are only part of the POST data
-  select_if(grepl("evaluation", names(.))==FALSE) %>%
-  # FIX IT - how is analysis affected by NAs? Still runs even if we keep this in, but removing it for now
-  # For preliminary analysis of PRE data, remove "understanding_coralclimate, coralskel, and diversity" questions which only showed up in 2017 and 2018
-  select(-c(understanding_coralclimate, understanding_coralskel, understanding_diversity))
+time_point <- c("pre", "post")
+for (i in time_point){
+  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
   
-scaled_post <- dat_scaled %>%
-  filter(test == "post")
+  dat_describe <- psych::describe(tidy_dat[,4:dim(tidy_dat)[2]])
+  
+  
+  # According to Goodwin 2016, these variables should be removed because they violate assumption of normality:
+  skew_fail <- row.names(dat_describe[abs(dat_describe$skew) >= 2,])
+  if (length(skew_fail) > 0){
+    skew_list <- paste(row.names(dat_describe[abs(dat_describe$skew) >= 2,]), collapse = ", ")
+    message <- paste(i, "dataset variables that fail skewness test:\n", skew_list, "\n")
+    cat(message) # unlike print(), cat will print \n as newline in console
+  }
+  
+  kurtosis_fail <- row.names(dat_describe[abs(dat_describe$kurtosis) >= 7,])
+  if (length(kurtosis_fail) > 0){
+    kurtosis_list <- paste(row.names(dat_describe[abs(dat_describe$kurtosis) >= 7,]), collapse = ", ")
+    message <- paste(i, "dataset variables that fail kurtosis test:\n", kurtosis_list, "\n")
+    cat(message)
+  }
 
-# FIX IT - Analyze just the pre questions for now:
+  ### NOTE: in pre data: "major_unsurecollege_yesno" violates skewness test for normality
+  # in post data: "attitudes_workwithothers", "major_unsurecollege_yesno", "understanding_relatetolife", and "understanding_society_pooled" violate skewness
 
-# SCREE PLOT TO DETERMINE THE NUMBER OF FACTORS IN THE DATA
-# FIX IT - in addition to scree plot, do parallel analysis 
-# See: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
-cor_dat_pre <- cor(scaled_pre[,4:dim(scaled_pre)[2]], use = "pairwise.complete.obs")
+  describe_csv <- paste("dat_describe_", i, ".csv", sep = "")
+  write.csv(dat_describe, describe_csv, row.names = TRUE) # write out row.names because these list the different "questions"
+  #drive_upload(describe_csv, path = as_dribble("REMS_SALG/")) # for initial upload
+  # FILE ID for dat_describe_pre.csv: 1F8VKg7lBRVEJ26Q77lFAgEn0n19TWPPJ
+  if (i == "pre"){
+    drive_update(file = as_id("1F8VKg7lBRVEJ26Q77lFAgEn0n19TWPPJ"), media = describe_csv)
+  }
+  # FILE ID for dat_describe_post.csv: 1OcP2sO6kgu6-W0wxYVnLFzrbHjcJxVY5
+  if (i == "post"){
+    drive_update(file = as_id("1OcP2sO6kgu6-W0wxYVnLFzrbHjcJxVY5"), media = describe_csv)
+  }
+  file.remove(describe_csv)
+  
+}
 
-pdf(file="pre_screeplot.pdf")
-fa.parallel(x = cor_dat_pre, fm = "ml", fa = "fa") # "ml" is the maximum likelihood method for "well-behaved" data
-dev.off()
+###################################################################################################################
+# SCREE PLOTS
 
-#drive_upload("pre_screeplot.pdf", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for pre_screeplot.pdf: 1e3po3VpVgC8klgihg-3EHz0g6EoNy6mT
-drive_update(file = as_id("1e3po3VpVgC8klgihg-3EHz0g6EoNy6mT"), media = "pre_screeplot.pdf")
-file.remove("pre_screeplot.pdf")
 
+time_point <- c("pre", "post")
+for (i in time_point){
+  
+  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
+  
+  dat_scaled <- scale(tidy_dat[,4:dim(tidy_dat)[2]], center=TRUE, scale=TRUE)
+  
+  # SCREE PLOT TO DETERMINE THE NUMBER OF FACTORS IN THE DATA
+  # FIX IT - in addition to scree plot, do parallel analysis?
+  # See: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
+  cor_matrix <- cor(dat_scaled, use = "pairwise.complete.obs")
+  
+  # Print to console:
+  cat("For", i, "data:\n")
+  
+  scree_name <- paste("screeplot_", i, ".pdf", sep = "")
+  pdf(file = scree_name)
+  fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
+  dev.off()
+  #drive_upload(scree_name, path = as_dribble("REMS_SALG/")) # for initial upload
+  
+  if (i == "pre"){
+    drive_update(file = as_id("1e3po3VpVgC8klgihg-3EHz0g6EoNy6mT"), media = scree_name)  
+  }
+  if (i == "post"){
+    drive_update(file = as_id("1GXAaVmQoO5tjxb6PNISzwsxFz3FM8JH5"), media = scree_name)  
+  }
+  
+  file.remove(scree_name)
+  
+}
+
+# LEFT OFF HERE: continue splitting analysis for pre vs post
+###################################################################################################################
 # FACTOR ANALYSIS
+
+
 
 # NOTE: set nfactors to results from Scree plot
 # NOTE: rotate = "promax" is what Goodwin 2016 used
