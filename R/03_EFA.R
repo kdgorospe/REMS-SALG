@@ -160,6 +160,7 @@ tidy_dat_post_final <- tidy_dat_post %>%
 
 ###################################################################################################################
 # SCREE PLOTS (version 1: retaining all variables; using unfiltered tidy_dat_pre and tidy_dat_post)
+# RESULT: use 6 factors for PRE data; use 3 factors for POST data
 # At this point, can go ahead and center and scale data using scale() function
 
 time_point <- c("pre", "post")
@@ -196,6 +197,7 @@ for (i in time_point){
 
 ###################################################################################################################
 # SCREE PLOTS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
+# RESULT: use 3 factors for PRE data; use 2 factors for POST data
 
 time_point <- c("pre", "post")
 for (i in time_point){
@@ -230,45 +232,129 @@ for (i in time_point){
 }
 
 ###################################################################################################################
-
-
-# FACTOR ANALYSIS
+# FACTOR ANALYSIS (version 1: retaining all variables; using unfiltered tidy_dat_pre and tidy_dat_post)
+# Uses nfactors 3 and nfactors 6 based on screeplots of unfiltered data
 
 # NOTE: set nfactors to results from Scree plot
 # NOTE: rotate = "promax" is what Goodwin 2016 used
 # NOTE: fm (factor method, aka factor extraction method): 
 # A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal).
-EFA_pre_cordat_5factor <- fa(r = cor_dat_pre, nfactors = 5, rotate = "promax", fm = "ml") 
 
-# Write model outputs to textfile
-sink("EFA_pre_cordat_5factor.txt")
-EFA_pre_cordat_5factor
-sink()
+time_point <- c("pre", "post")
+for (i in time_point){
+  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
+  cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
+  cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
+  
+  for (f in c(3, 6)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
+    EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
+    
+    # Write model outputs to textfile
+    efa_file <- paste("EFA_", i, "_", f, "factors.txt", sep = "")
+    sink(efa_file)
+    EFA_results
+    sink()
+    
+    efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
+    # Simplify model outputs: Write just factor loadings to textfile:
+    sink(efa_loadings_file)
+    EFA_results$loadings
+    sink()
 
-#drive_upload("EFA_pre_cordat_5factor.txt", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for EFA_pre_cordat_5factor.txt: 1xBtWz9dBAap1kjjh00H3liHr1Don_Niu
-drive_update(file = as_id("1xBtWz9dBAap1kjjh00H3liHr1Don_Niu"), media = "EFA_pre_cordat_5factor.txt")
-file.remove("EFA_pre_cordat_5factor.txt")
+    #drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    if (i == "pre" & f == 3){
+      drive_update(file = as_id("1KmYFQYaNqNxtKCfkqPf9oEOzipse7WLi"), media = efa_file)  
+      drive_update(file = as_id("1Q8gpvCavs4InBvhl1c0zLTXD69JGZGfd"), media = efa_loadings_file)  
+    }
+    if (i == "post" & f == 3){
+      drive_update(file = as_id("1WtknxTkcCc1dcBrOAd0VzvzsrbLQtef1"), media = efa_file)  
+      drive_update(file = as_id("1tRRJ9RHNll4uw676YVfgX14H0gJD0rY6"), media = efa_loadings_file)  
+    }
+    if (i == "pre" & f == 6){
+      drive_update(file = as_id("1o-BnY6VDmBCO9AH5F-ajy7nrFDFYH9rK"), media = efa_file)  
+      drive_update(file = as_id("1jk6JuP4cVq61BOpTMt7Q2yMjcf5ZBLn8"), media = efa_loadings_file)  
+    }
+    if (i == "post" & f == 6){
+      drive_update(file = as_id("18QF8at0WBq0yIjwCX44KKknDpZnNqufU"), media = efa_file)  
+      drive_update(file = as_id("1nQLE_DsA_P5OmWFLy-eMSJudx1uiUzgO"), media = efa_loadings_file)  
+    }
+    file.remove(efa_file)
+    file.remove(efa_loadings_file)
+  } # END loop through different number of factors
 
-# Simplify model outputs: Write just factor loadings to textfile:
-sink("EFA_pre_cordat_5factor_loadings.txt")
-EFA_pre_cordat_5factor$loadings
-sink()
+  # To output how much variance is accounted for by the factors:
+  # Or just inspect the table of "Cumulative Var"
+  #EFA_results$Vaccounted
+  #EFA_results$Vaccounted[3, f] # i.e., last column of the "cumulative variance" row
+  
+  # Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
+  #EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
+  #EFA_rawdat_results$scores
+}
 
-#drive_upload("EFA_pre_cordat_5factor_loadings.txt", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for EFA_pre_cordat_5factor_loadings.txt: 1JUY5F8OWKNTKgpdN2HMtpTXAUDw2XUFZ
-drive_update(file = as_id("1JUY5F8OWKNTKgpdN2HMtpTXAUDw2XUFZ"), media = "EFA_pre_cordat_5factor_loadings.txt")
-file.remove("EFA_pre_cordat_5factor_loadings.txt")
+###################################################################################################################
+# FACTOR ANALYSIS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
+# Uses nfactors 3 and nfactors 2 based on screeplots of final (i.e., filtered) data
 
+# NOTE: set nfactors to results from Scree plot
+# NOTE: rotate = "promax" is what Goodwin 2016 used
+# NOTE: fm (factor method, aka factor extraction method): 
+# A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal).
 
-# To find out how much variance is accounted for by the factors:
-EFA_pre_cordat_5factor$Vaccounted
-EFA_pre_cordat_5factor$Vaccounted[3, 5]
+time_point <- c("pre", "post")
+for (i in time_point){
+  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
+  cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
+  cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
+  
+  for (f in c(2, 3)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
+    EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
+    
+    # Write model outputs to textfile
+    efa_file <- paste("EFA_", i, "_", f, "factors.txt", sep = "")
+    sink(efa_file)
+    EFA_results
+    sink()
+    
+    efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
+    # Simplify model outputs: Write just factor loadings to textfile:
+    sink(efa_loadings_file)
+    EFA_results$loadings
+    sink()
+    
+    drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    if (i == "pre" & f == 2){
+      drive_update(file = as_id("1KmYFQYaNqNxtKCfkqPf9oEOzipse7WLi"), media = efa_file)  
+      drive_update(file = as_id("1Q8gpvCavs4InBvhl1c0zLTXD69JGZGfd"), media = efa_loadings_file)  
+    }
+    if (i == "post" & f == 2){
+      drive_update(file = as_id("1WtknxTkcCc1dcBrOAd0VzvzsrbLQtef1"), media = efa_file)  
+      drive_update(file = as_id("1tRRJ9RHNll4uw676YVfgX14H0gJD0rY6"), media = efa_loadings_file)  
+    }
+    if (i == "pre" & f == 3){
+      drive_update(file = as_id("1o-BnY6VDmBCO9AH5F-ajy7nrFDFYH9rK"), media = efa_file)  
+      drive_update(file = as_id("1jk6JuP4cVq61BOpTMt7Q2yMjcf5ZBLn8"), media = efa_loadings_file)  
+    }
+    if (i == "post" & f == 3){
+      drive_update(file = as_id("18QF8at0WBq0yIjwCX44KKknDpZnNqufU"), media = efa_file)  
+      drive_update(file = as_id("1nQLE_DsA_P5OmWFLy-eMSJudx1uiUzgO"), media = efa_loadings_file)  
+    }
+    file.remove(efa_file)
+    file.remove(efa_loadings_file)
+  } # END loop through different number of factors
+  
+  # To output how much variance is accounted for by the factors:
+  # Or just inspect the table of "Cumulative Var"
+  #EFA_results$Vaccounted
+  #EFA_results$Vaccounted[3, f] # i.e., last column of the "cumulative variance" row
+  
+  # Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
+  #EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
+  #EFA_rawdat_results$scores
+}
 
-
-# Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
-#EFA_pre_rawdat_5factor <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
-#EFA_pre_rawdat_5factor$scores
 
 
 
