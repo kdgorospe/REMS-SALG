@@ -91,6 +91,7 @@ for (i in time_point){
 
 ###################################################################################################################
 # TEST FOR NORMALITY
+## Note: scale() function only shifts data to mean = 0 and standard deviation = 1; i.e., does nothing to affect how normally distributed it is; keep raw data so we see results in terms of the Likert scale (e.g., mean response for each variable)
 ## From Godwin 2013 for EFA: The skew and kurtosis were evaluated for each item to ensure that the assumptions of multivariate normality were not severely violated 
 ## Do this separately for pre and post
 ## Use describe() to examine normality of each variable ()
@@ -118,9 +119,6 @@ for (i in time_point){
     cat(message)
   }
 
-  ### NOTE: in pre data: "major_unsurecollege_yesno" violates skewness test for normality
-  # in post data: "attitudes_workwithothers", "major_unsurecollege_yesno", "understanding_relatetolife", and "understanding_society_pooled" violate skewness
-
   describe_csv <- paste("dat_describe_", i, ".csv", sep = "")
   write.csv(dat_describe, describe_csv, row.names = TRUE) # write out row.names because these list the different "questions"
   #drive_upload(describe_csv, path = as_dribble("REMS_SALG/")) # for initial upload
@@ -137,8 +135,32 @@ for (i in time_point){
 }
 
 ###################################################################################################################
-# SCREE PLOTS
+# Finalize variable list for further analysis:
 
+# NOTES on TEST FOR NORMALITY: 
+# in pre data: "major_unsurecollege_yesno" violates skewness test for normality
+# in post data: "attitudes_workwithothers", "major_unsurecollege_yesno", "understanding_relatetolife", and "understanding_society_pooled" violate skewness
+
+# MOVING FORWARD: 
+# remove all binary responses from analysis (i.e., major_marinesci_yesno, major_notscience_yesno, etc) - EFA should be done on continuous or continuous-like data (e.g., Likert scale) but not binary data
+# remove attitudes_workwithothers, understanding_relatetolife, understanding_society_pooled in both pre and post data
+# Seems OK to do this since some of these concepts are captured by other questions (e.g., integration_connectingknowledge, integration_applyingknowledge)
+
+# FIX IT: Add to end of analysis: Compare binary responses pre vs post with t-tests
+# FIX IT: For supplementary material, consider redoing analysis while retaining those variables that violated tests for normality to see how this affects results??
+
+# FILTER THESE OUT FOR NOW:
+
+variables_to_filter <- c("major_marinesci_yesno", "major_notscience_yesno", "major_science_yesno", "major_undecided_yesno", "major_unsurecollege_yesno",
+                         "attitudes_workwithothers", "understanding_relatetolife", "understanding_society_pooled")
+tidy_dat_pre_final <- tidy_dat_pre %>%
+  select(-(all_of(variables_to_filter))) # Use all_of to fix ambiguity of selecting columns, see: https://tidyselect.r-lib.org/reference/faq-external-vector.html
+tidy_dat_post_final <- tidy_dat_post %>%
+  select(-(all_of(variables_to_filter))) 
+
+###################################################################################################################
+# SCREE PLOTS (version 1: retaining all variables; using unfiltered tidy_dat_pre and tidy_dat_post)
+# At this point, can go ahead and center and scale data using scale() function
 
 time_point <- c("pre", "post")
 for (i in time_point){
@@ -172,11 +194,45 @@ for (i in time_point){
   
 }
 
-# LEFT OFF HERE: continue splitting analysis for pre vs post
 ###################################################################################################################
+# SCREE PLOTS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
+
+time_point <- c("pre", "post")
+for (i in time_point){
+  
+  tidy_dat <- get(paste("tidy_dat_", i, "_final", sep=""))
+  
+  dat_scaled <- scale(tidy_dat[,4:dim(tidy_dat)[2]], center=TRUE, scale=TRUE)
+  
+  # SCREE PLOT TO DETERMINE THE NUMBER OF FACTORS IN THE DATA
+  # FIX IT - in addition to scree plot, do parallel analysis?
+  # See: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
+  cor_matrix <- cor(dat_scaled, use = "pairwise.complete.obs")
+  
+  # Print to console:
+  cat("For", i, "data:\n")
+  
+  scree_name <- paste("screeplot_", i, "_final.pdf", sep = "")
+  pdf(file = scree_name)
+  fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
+  dev.off()
+  #drive_upload(scree_name, path = as_dribble("REMS_SALG/")) # for initial upload
+
+  if (i == "pre"){
+    drive_update(file = as_id("10MDj7YS0qlW2wDFcihqjAlWn2hjkpECE"), media = scree_name)  
+  }
+  if (i == "post"){
+    drive_update(file = as_id("10MjeQ3I-0ioz_eu25hWEfXcfyuBcI-QM"), media = scree_name)  
+  }
+  
+  file.remove(scree_name)
+  
+}
+
+###################################################################################################################
+
+
 # FACTOR ANALYSIS
-
-
 
 # NOTE: set nfactors to results from Scree plot
 # NOTE: rotate = "promax" is what Goodwin 2016 used

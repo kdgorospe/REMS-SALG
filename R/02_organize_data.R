@@ -2,11 +2,10 @@
 # Example: Data about student attitudes towards a career in marine science are from question 3.3 in 2013-2016 and from question 4.3 in 2017-2018 is given the label "attitudes_career"
 # kdgorospe@gmail.com
 
-
 require(tidyverse)
 require(googledrive)
 
-### THe following creates a list of question IDs to be used for specifying the data structure
+### The following creates a list of question IDs to be used for specifying the data structure
 question_id_list = list()
 # Create list of questions and ids
 # start with i=2 because i=1 is ID column

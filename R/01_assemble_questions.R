@@ -1,12 +1,11 @@
 # Import questions and line them up across years
 # kdgorospe@gmail.com
 
+###### REMIDNER: drive_download function requires authentication with Google Drive before rest of script can run
 rm(list=ls())
 require(tidyverse)
 require(googledrive)
 require(data.table)
-
-###### REMIDNER: drive_download function requires authentication with Google Drive before rest of script can run
 
 post_ids <- c("1qyFMQvFGbXaQxODcFrXMTTjKU18VOeTa",
               "1YrvX4e_vfP0ioJm7f7lI7bb4ItEbmjHg",
