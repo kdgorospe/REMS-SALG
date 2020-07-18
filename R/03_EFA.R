@@ -291,7 +291,8 @@ for (i in time_point){
   # Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
   #EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
   #EFA_rawdat_results$scores
-}
+  
+} # END loop through pre and post
 
 ###################################################################################################################
 # FACTOR ANALYSIS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
@@ -304,7 +305,8 @@ for (i in time_point){
 
 time_point <- c("pre", "post")
 for (i in time_point){
-  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
+  
+  tidy_dat <- get(paste("tidy_dat_", i, "_final", sep=""))
   cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
   cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
   
@@ -312,37 +314,38 @@ for (i in time_point){
     EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
     
     # Write model outputs to textfile
-    efa_file <- paste("EFA_", i, "_", f, "factors.txt", sep = "")
+    efa_file <- paste("EFA_", i, "_final_", f, "factors.txt", sep = "")
     sink(efa_file)
     EFA_results
     sink()
     
-    efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
+    efa_loadings_file <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.txt", sep = "")
     # Simplify model outputs: Write just factor loadings to textfile:
     sink(efa_loadings_file)
     EFA_results$loadings
     sink()
     
-    drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
-    drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    #drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/")) # for initial upload
     if (i == "pre" & f == 2){
-      drive_update(file = as_id("1KmYFQYaNqNxtKCfkqPf9oEOzipse7WLi"), media = efa_file)  
-      drive_update(file = as_id("1Q8gpvCavs4InBvhl1c0zLTXD69JGZGfd"), media = efa_loadings_file)  
+      drive_update(file = as_id("12iwgVtrcCZLp2DFY0bvGsBxFY1zYN3Y-"), media = efa_file)  
+      drive_update(file = as_id("1BMtxW8NtXs5122lHbDwB2KGfNlVo2b7g"), media = efa_loadings_file)  
     }
     if (i == "post" & f == 2){
-      drive_update(file = as_id("1WtknxTkcCc1dcBrOAd0VzvzsrbLQtef1"), media = efa_file)  
-      drive_update(file = as_id("1tRRJ9RHNll4uw676YVfgX14H0gJD0rY6"), media = efa_loadings_file)  
+      drive_update(file = as_id("1nd1wHCAtxvkkCJ4AsIAVVTgasdJHqa8m"), media = efa_file)  
+      drive_update(file = as_id("1WreDCo-PD7XJIaa9M-Cm5oRo5Ju8_e1Q"), media = efa_loadings_file)  
     }
     if (i == "pre" & f == 3){
-      drive_update(file = as_id("1o-BnY6VDmBCO9AH5F-ajy7nrFDFYH9rK"), media = efa_file)  
-      drive_update(file = as_id("1jk6JuP4cVq61BOpTMt7Q2yMjcf5ZBLn8"), media = efa_loadings_file)  
+      drive_update(file = as_id("112q1ZEUSu5_BpmHp8dQofu9eBFo1xcdm"), media = efa_file)  
+      drive_update(file = as_id("1OzRsWOpI15h67vEtZY364n9CwsQZPg8S"), media = efa_loadings_file)  
     }
     if (i == "post" & f == 3){
-      drive_update(file = as_id("18QF8at0WBq0yIjwCX44KKknDpZnNqufU"), media = efa_file)  
-      drive_update(file = as_id("1nQLE_DsA_P5OmWFLy-eMSJudx1uiUzgO"), media = efa_loadings_file)  
+      drive_update(file = as_id("12xuQyZ0nD0xp6VQTwYb9kgW02Gy5n3QV"), media = efa_file)  
+      drive_update(file = as_id("1wJ0-ZbUPB4fQ26V6Sd3PwaocpYmiZbUN"), media = efa_loadings_file)  
     }
     file.remove(efa_file)
     file.remove(efa_loadings_file)
+    
   } # END loop through different number of factors
   
   # To output how much variance is accounted for by the factors:
@@ -353,7 +356,8 @@ for (i in time_point){
   # Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
   #EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
   #EFA_rawdat_results$scores
-}
+  
+} # END loop through pre and post
 
 
 
