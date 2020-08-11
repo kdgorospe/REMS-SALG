@@ -252,13 +252,13 @@ for (i in time_point){
     # Write model outputs to textfile
     efa_file <- paste("EFA_", i, "_", f, "factors.txt", sep = "")
     sink(efa_file)
-    EFA_results
+    print(EFA_results)
     sink()
-    
+
     efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
     # Simplify model outputs: Write just factor loadings to textfile:
     sink(efa_loadings_file)
-    EFA_results$loadings
+    print(EFA_results$loadings)
     sink()
 
     #drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
@@ -316,13 +316,13 @@ for (i in time_point){
     # Write model outputs to textfile
     efa_file <- paste("EFA_", i, "_final_", f, "factors.txt", sep = "")
     sink(efa_file)
-    EFA_results
+    print(EFA_results)
     sink()
     
     efa_loadings_file <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.txt", sep = "")
     # Simplify model outputs: Write just factor loadings to textfile:
     sink(efa_loadings_file)
-    EFA_results$loadings
+    print(EFA_results$loadings)
     sink()
     
     #drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
