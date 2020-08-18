@@ -254,33 +254,39 @@ for (i in time_point){
     sink(efa_file)
     print(EFA_results)
     sink()
-
-    efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
+    
     # Simplify model outputs: Write just factor loadings to textfile:
-    sink(efa_loadings_file)
-    print(EFA_results$loadings)
-    sink()
+    #efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
+    #sink(efa_loadings_file)
+    #print(EFA_results$loadings)
+    #sink()
+    
+    # Simplify model outputs: Write factor loadings to csv file
+    efa_loadings_csv <- paste("EFA_", i, "_", f, "factors_loadingsONLY.csv", sep = "")
+    EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
+    write.csv(EFA_loadings_only, file = efa_loadings_csv)
 
-    #drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
-    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
     if (i == "pre" & f == 3){
       drive_update(file = as_id("1KmYFQYaNqNxtKCfkqPf9oEOzipse7WLi"), media = efa_file)  
-      drive_update(file = as_id("1Q8gpvCavs4InBvhl1c0zLTXD69JGZGfd"), media = efa_loadings_file)  
+      drive_update(file = as_id("1sxk_70W4MZnYG4LoOq0dbwOJ0-gaKiEB"), media = efa_loadings_csv) 
     }
     if (i == "post" & f == 3){
       drive_update(file = as_id("1WtknxTkcCc1dcBrOAd0VzvzsrbLQtef1"), media = efa_file)  
-      drive_update(file = as_id("1tRRJ9RHNll4uw676YVfgX14H0gJD0rY6"), media = efa_loadings_file)  
+      drive_update(file = as_id("1AAn-gdBbpQyfthKemDLuUinha1PM3h7y"), media = efa_loadings_csv) 
     }
     if (i == "pre" & f == 6){
       drive_update(file = as_id("1o-BnY6VDmBCO9AH5F-ajy7nrFDFYH9rK"), media = efa_file)  
-      drive_update(file = as_id("1jk6JuP4cVq61BOpTMt7Q2yMjcf5ZBLn8"), media = efa_loadings_file)  
+      drive_update(file = as_id("1mtbVNt6eoimoRFeNrKuko7CbRzpqtb0g"), media = efa_loadings_csv) 
     }
     if (i == "post" & f == 6){
       drive_update(file = as_id("18QF8at0WBq0yIjwCX44KKknDpZnNqufU"), media = efa_file)  
-      drive_update(file = as_id("1nQLE_DsA_P5OmWFLy-eMSJudx1uiUzgO"), media = efa_loadings_file)  
+      drive_update(file = as_id("1FsrAdaf_ukXs391sHC4q-kzVBf1CTVVy"), media = efa_loadings_csv) 
     }
     file.remove(efa_file)
-    file.remove(efa_loadings_file)
+    file.remove(efa_loadings_csv)
   } # END loop through different number of factors
 
   # To output how much variance is accounted for by the factors:
@@ -319,32 +325,38 @@ for (i in time_point){
     print(EFA_results)
     sink()
     
-    efa_loadings_file <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.txt", sep = "")
     # Simplify model outputs: Write just factor loadings to textfile:
-    sink(efa_loadings_file)
-    print(EFA_results$loadings)
-    sink()
+    #efa_loadings_file <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.txt", sep = "")
+    #sink(efa_loadings_file)
+    #print(EFA_results$loadings)
+    #sink()
     
-    #drive_upload(efa_file, path = as_dribble("REMS_SALG/")) # for initial upload
-    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/")) # for initial upload
+    # Simplify model outputs: Write factor loadings to csv file
+    efa_loadings_csv <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.csv", sep = "")
+    EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
+    write.csv(EFA_loadings_only, file = efa_loadings_csv)
+    
+    #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
     if (i == "pre" & f == 2){
       drive_update(file = as_id("12iwgVtrcCZLp2DFY0bvGsBxFY1zYN3Y-"), media = efa_file)  
-      drive_update(file = as_id("1BMtxW8NtXs5122lHbDwB2KGfNlVo2b7g"), media = efa_loadings_file)  
+      drive_update(file = as_id("1YIEGxl15e2RxdopY0KOnnFNoEoIhmImX"), media = efa_loadings_csv)  #https://drive.google.com/file/d/1YIEGxl15e2RxdopY0KOnnFNoEoIhmImX/view?usp=sharing
     }
     if (i == "post" & f == 2){
       drive_update(file = as_id("1nd1wHCAtxvkkCJ4AsIAVVTgasdJHqa8m"), media = efa_file)  
-      drive_update(file = as_id("1WreDCo-PD7XJIaa9M-Cm5oRo5Ju8_e1Q"), media = efa_loadings_file)  
+      drive_update(file = as_id("1hAKDhB-og4Sx3nZILAxGEQuZYCqVZptD"), media = efa_loadings_csv) #https://drive.google.com/file/d/1hAKDhB-og4Sx3nZILAxGEQuZYCqVZptD/view?usp=sharing
     }
     if (i == "pre" & f == 3){
       drive_update(file = as_id("112q1ZEUSu5_BpmHp8dQofu9eBFo1xcdm"), media = efa_file)  
-      drive_update(file = as_id("1OzRsWOpI15h67vEtZY364n9CwsQZPg8S"), media = efa_loadings_file)  
+      drive_update(file = as_id("1Bhxgj4ch5c9VKlKeQTui4eszEgIbGMln"), media = efa_loadings_csv) #https://drive.google.com/file/d/1Bhxgj4ch5c9VKlKeQTui4eszEgIbGMln/view?usp=sharing
     }
     if (i == "post" & f == 3){
       drive_update(file = as_id("12xuQyZ0nD0xp6VQTwYb9kgW02Gy5n3QV"), media = efa_file)  
-      drive_update(file = as_id("1wJ0-ZbUPB4fQ26V6Sd3PwaocpYmiZbUN"), media = efa_loadings_file)  
+      drive_update(file = as_id("1MXunNhg7CFSrr73T3yNEV-t0Wlbe2fHO"), media = efa_loadings_csv) #https://drive.google.com/file/d/1MXunNhg7CFSrr73T3yNEV-t0Wlbe2fHO/view?usp=sharing
     }
     file.remove(efa_file)
-    file.remove(efa_loadings_file)
+    file.remove(efa_loadings_csv)
     
   } # END loop through different number of factors
   
