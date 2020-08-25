@@ -264,9 +264,9 @@ for (i in time_point){
   if (i == "pre"){
     drive_update(file = as_id("10MDj7YS0qlW2wDFcihqjAlWn2hjkpECE"), media = scree_name)  
   }
-  if (i == "post"){
-    drive_update(file = as_id("10MjeQ3I-0ioz_eu25hWEfXcfyuBcI-QM"), media = scree_name)  
-  }
+  # if (i == "post"){
+  #   drive_update(file = as_id("10MjeQ3I-0ioz_eu25hWEfXcfyuBcI-QM"), media = scree_name)  
+  # }
   
   file.remove(scree_name)
   
@@ -343,7 +343,8 @@ for (i in time_point){
 
 ###################################################################################################################
 # FACTOR ANALYSIS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
-# Uses nfactors 3 and nfactors 2 based on screeplots of final (i.e., filtered) data
+# Uses nfactors 2, 3, and 4 based on screeplot of final (i.e., filtered) data
+# Note: script produces results for pre and post data, but only the pre results are uploaded to Google Drive since this is the only one we care about for EFA
 
 # NOTE: set nfactors to results from Scree plot
 # NOTE: rotate = "promax" is what Goodwin 2016 used
@@ -357,7 +358,7 @@ for (i in time_point){
   cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
   cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
   
-  for (f in c(2, 3)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
+  for (f in c(2, 3, 4)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
     EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
     
     # Write model outputs to textfile
@@ -378,38 +379,41 @@ for (i in time_point){
     write.csv(EFA_loadings_only, file = efa_loadings_csv)
     
     #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
     #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
     if (i == "pre" & f == 2){
       drive_update(file = as_id("12iwgVtrcCZLp2DFY0bvGsBxFY1zYN3Y-"), media = efa_file)  
-      drive_update(file = as_id("1YIEGxl15e2RxdopY0KOnnFNoEoIhmImX"), media = efa_loadings_csv)  #https://drive.google.com/file/d/1YIEGxl15e2RxdopY0KOnnFNoEoIhmImX/view?usp=sharing
-    }
-    if (i == "post" & f == 2){
-      drive_update(file = as_id("1nd1wHCAtxvkkCJ4AsIAVVTgasdJHqa8m"), media = efa_file)  
-      drive_update(file = as_id("1hAKDhB-og4Sx3nZILAxGEQuZYCqVZptD"), media = efa_loadings_csv) #https://drive.google.com/file/d/1hAKDhB-og4Sx3nZILAxGEQuZYCqVZptD/view?usp=sharing
+      drive_update(file = as_id("1YIEGxl15e2RxdopY0KOnnFNoEoIhmImX"), media = efa_loadings_csv)
     }
     if (i == "pre" & f == 3){
       drive_update(file = as_id("112q1ZEUSu5_BpmHp8dQofu9eBFo1xcdm"), media = efa_file)  
-      drive_update(file = as_id("1Bhxgj4ch5c9VKlKeQTui4eszEgIbGMln"), media = efa_loadings_csv) #https://drive.google.com/file/d/1Bhxgj4ch5c9VKlKeQTui4eszEgIbGMln/view?usp=sharing
+      drive_update(file = as_id("1Bhxgj4ch5c9VKlKeQTui4eszEgIbGMln"), media = efa_loadings_csv) 
     }
-    if (i == "post" & f == 3){
-      drive_update(file = as_id("12xuQyZ0nD0xp6VQTwYb9kgW02Gy5n3QV"), media = efa_file)  
-      drive_update(file = as_id("1MXunNhg7CFSrr73T3yNEV-t0Wlbe2fHO"), media = efa_loadings_csv) #https://drive.google.com/file/d/1MXunNhg7CFSrr73T3yNEV-t0Wlbe2fHO/view?usp=sharing
+    if (i == "pre" & f == 4){
+      drive_update(file = as_id("1Aap49QMTTRB0FcCjNCCVIbdliG2JbwCX"), media = efa_file)
+      drive_update(file = as_id("164dKLXu-CrvaRVseABblDGJDfvOdjaRA"), media = efa_loadings_csv) 
     }
+    # if (i == "post" & f == 2){
+    #   drive_update(file = as_id("1nd1wHCAtxvkkCJ4AsIAVVTgasdJHqa8m"), media = efa_file)  
+    #   drive_update(file = as_id("1hAKDhB-og4Sx3nZILAxGEQuZYCqVZptD"), media = efa_loadings_csv)
+    # }
+    # if (i == "post" & f == 3){
+    #   drive_update(file = as_id("12xuQyZ0nD0xp6VQTwYb9kgW02Gy5n3QV"), media = efa_file)  
+    #   drive_update(file = as_id("1MXunNhg7CFSrr73T3yNEV-t0Wlbe2fHO"), media = efa_loadings_csv)
+    # }
     file.remove(efa_file)
     file.remove(efa_loadings_csv)
     
   } # END loop through different number of factors
   
-  # To output how much variance is accounted for by the factors:
-  # Or just inspect the table of "Cumulative Var"
-  #EFA_results$Vaccounted
-  #EFA_results$Vaccounted[3, f] # i.e., last column of the "cumulative variance" row
-  
-  # Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
-  #EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
-  #EFA_rawdat_results$scores
-  
 } # END loop through pre and post
 
+
+# To output how much variance is accounted for by the factors:
+# Or just inspect the table of "Cumulative Var"
+#EFA_results$Vaccounted
+#EFA_results$Vaccounted[3, f] # i.e., last column of the "cumulative variance" row
+
+# Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
+#EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
+#EFA_rawdat_results$scores
 
