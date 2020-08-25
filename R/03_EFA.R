@@ -1,6 +1,10 @@
 # Do preliminary analysis (correlation and scree plots) and exploratory factor analysis
 # kdgorospe@gmail.com
 
+### NOTE: Focus on EFA results on the pre-data, plan is to use this as the "confirmed" model
+### Then use CFA on the pre and post in a factorial invariance framework to test for changes between the two time points
+### Screeplot on the pre-data (after filtering out variables that fail normality test) suggests there are three latent factors
+
 library(psych)
 library(corrplot)
 library(GPArotation) # needed for promax rotation in fa function
@@ -158,42 +162,79 @@ tidy_dat_pre_final <- tidy_dat_pre %>%
 tidy_dat_post_final <- tidy_dat_post %>%
   select(-(all_of(variables_to_filter))) 
 
-###################################################################################################################
-# SCREE PLOTS (version 1: retaining all variables; using unfiltered tidy_dat_pre and tidy_dat_post)
-# RESULT: use 6 factors for PRE data; use 3 factors for POST data
-# At this point, can go ahead and center and scale data using scale() function
+# Additional EFA data inspection tests:
 
-time_point <- c("pre", "post")
-for (i in time_point){
-  
-  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
-  
-  dat_scaled <- scale(tidy_dat[,4:dim(tidy_dat)[2]], center=TRUE, scale=TRUE)
-  
-  # SCREE PLOT TO DETERMINE THE NUMBER OF FACTORS IN THE DATA
-  # FIX IT - in addition to scree plot, do parallel analysis?
-  # See: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
-  cor_matrix <- cor(dat_scaled, use = "pairwise.complete.obs")
-  
-  # Print to console:
-  cat("For", i, "data:\n")
-  
-  scree_name <- paste("screeplot_", i, ".pdf", sep = "")
-  pdf(file = scree_name)
-  fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
-  dev.off()
-  #drive_upload(scree_name, path = as_dribble("REMS_SALG/")) # for initial upload
-  
-  if (i == "pre"){
-    drive_update(file = as_id("1e3po3VpVgC8klgihg-3EHz0g6EoNy6mT"), media = scree_name)  
-  }
-  if (i == "post"){
-    drive_update(file = as_id("1GXAaVmQoO5tjxb6PNISzwsxFz3FM8JH5"), media = scree_name)  
-  }
-  
-  file.remove(scree_name)
-  
-}
+# 1 - Bartlett's test of sphericity - tests whether observed correlation matrix is an identity matrix;
+# Tests whether or not the correlation matrix exhibits any relationships or if has a complete lack of relationships (i.e., the identity matrix)
+# Just perform this on the pre data since that's the only being used in the EFA
+
+pre_cor_matrix <- cor(tidy_dat_pre_final[,-c(1:3)], use="pairwise.complete.obs")
+
+# RESULTS: Test shows results are significantly different from the identity matrix
+cortest.bartlett(R = pre_cor_matrix, n = nrow(tidy_dat_pre_final), diag = TRUE) 
+
+# SAVE RESULTS:
+bartlett_name <- "pre_cor_matrix_Bartlett's_test.txt"
+sink(bartlett_name)
+print(cortest.bartlett(R = pre_cor_matrix, n = nrow(tidy_dat_pre_final), diag = TRUE))
+sink()
+
+#drive_upload(bartlett_name, path = as_dribble("REMS_SALG/")) # for initial upload
+drive_update(file = as_id("16qk3hg-iUYo9iZhS9ecbFP_PZgMIZ3bv"), media = bartlett_name)  
+file.remove(bartlett_name)
+
+# 2 - Kaiser, Meyer, Olkin measure of Sampling Adequacy
+
+KMO(r = pre_cor_matrix)
+# RESULS: Test shows all variables are above cutoff of 0.6 (actually, all are above 0.7)
+# This indicates that common variance (and thus latent factors) are present in the data
+
+# SAVE RESULTS:
+KMO_name <- "pre_cor_matrix_KMO_test.txt"
+sink(KMO_name)
+print(KMO(r = pre_cor_matrix))
+sink()
+
+#drive_upload(KMO_name, path = as_dribble("REMS_SALG/")) # for initial upload
+drive_update(file = as_id("1blC5LHL1QUtCh9Y0Xu7j-3AuAtXrpQNw"), media = KMO_name)  
+file.remove(KMO_name)
+
+###################################################################################################################
+# # SCREE PLOTS (version 1: retaining all variables; using unfiltered tidy_dat_pre and tidy_dat_post)
+# # RESULT: use 6 factors for PRE data; use 3 factors for POST data
+# # At this point, can go ahead and center and scale data using scale() function
+# 
+# time_point <- c("pre", "post")
+# for (i in time_point){
+#   
+#   tidy_dat <- get(paste("tidy_dat_", i, sep=""))
+#   
+#   dat_scaled <- scale(tidy_dat[,4:dim(tidy_dat)[2]], center=TRUE, scale=TRUE)
+#   
+#   # SCREE PLOT TO DETERMINE THE NUMBER OF FACTORS IN THE DATA
+#   # FIX IT - in addition to scree plot, do parallel analysis?
+#   # See: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
+#   cor_matrix <- cor(dat_scaled, use = "pairwise.complete.obs")
+#   
+#   # Print to console:
+#   cat("For", i, "data:\n")
+#   
+#   scree_name <- paste("screeplot_", i, ".pdf", sep = "")
+#   pdf(file = scree_name)
+#   fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
+#   dev.off()
+#   #drive_upload(scree_name, path = as_dribble("REMS_SALG/")) # for initial upload
+#   
+#   if (i == "pre"){
+#     drive_update(file = as_id("1e3po3VpVgC8klgihg-3EHz0g6EoNy6mT"), media = scree_name)  
+#   }
+#   if (i == "post"){
+#     drive_update(file = as_id("1GXAaVmQoO5tjxb6PNISzwsxFz3FM8JH5"), media = scree_name)  
+#   }
+#   
+#   file.remove(scree_name)
+#   
+# }
 
 ###################################################################################################################
 # SCREE PLOTS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
@@ -239,66 +280,66 @@ for (i in time_point){
 # NOTE: rotate = "promax" is what Goodwin 2016 used
 # NOTE: fm (factor method, aka factor extraction method): 
 # A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal).
-
-time_point <- c("pre", "post")
-for (i in time_point){
-  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
-  cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
-  cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
-  
-  for (f in c(3, 6)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
-    EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
-    
-    # Write model outputs to textfile
-    efa_file <- paste("EFA_", i, "_", f, "factors.txt", sep = "")
-    sink(efa_file)
-    print(EFA_results)
-    sink()
-    
-    # Simplify model outputs: Write just factor loadings to textfile:
-    #efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
-    #sink(efa_loadings_file)
-    #print(EFA_results$loadings)
-    #sink()
-    
-    # Simplify model outputs: Write factor loadings to csv file
-    efa_loadings_csv <- paste("EFA_", i, "_", f, "factors_loadingsONLY.csv", sep = "")
-    EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
-    write.csv(EFA_loadings_only, file = efa_loadings_csv)
-
-    #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    if (i == "pre" & f == 3){
-      drive_update(file = as_id("1KmYFQYaNqNxtKCfkqPf9oEOzipse7WLi"), media = efa_file)  
-      drive_update(file = as_id("1sxk_70W4MZnYG4LoOq0dbwOJ0-gaKiEB"), media = efa_loadings_csv) 
-    }
-    if (i == "post" & f == 3){
-      drive_update(file = as_id("1WtknxTkcCc1dcBrOAd0VzvzsrbLQtef1"), media = efa_file)  
-      drive_update(file = as_id("1AAn-gdBbpQyfthKemDLuUinha1PM3h7y"), media = efa_loadings_csv) 
-    }
-    if (i == "pre" & f == 6){
-      drive_update(file = as_id("1o-BnY6VDmBCO9AH5F-ajy7nrFDFYH9rK"), media = efa_file)  
-      drive_update(file = as_id("1mtbVNt6eoimoRFeNrKuko7CbRzpqtb0g"), media = efa_loadings_csv) 
-    }
-    if (i == "post" & f == 6){
-      drive_update(file = as_id("18QF8at0WBq0yIjwCX44KKknDpZnNqufU"), media = efa_file)  
-      drive_update(file = as_id("1FsrAdaf_ukXs391sHC4q-kzVBf1CTVVy"), media = efa_loadings_csv) 
-    }
-    file.remove(efa_file)
-    file.remove(efa_loadings_csv)
-  } # END loop through different number of factors
-
-  # To output how much variance is accounted for by the factors:
-  # Or just inspect the table of "Cumulative Var"
-  #EFA_results$Vaccounted
-  #EFA_results$Vaccounted[3, f] # i.e., last column of the "cumulative variance" row
-  
-  # Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
-  #EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
-  #EFA_rawdat_results$scores
-  
-} # END loop through pre and post
+# 
+# time_point <- c("pre", "post")
+# for (i in time_point){
+#   tidy_dat <- get(paste("tidy_dat_", i, sep=""))
+#   cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
+#   cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
+#   
+#   for (f in c(3, 6)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
+#     EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
+#     
+#     # Write model outputs to textfile
+#     efa_file <- paste("EFA_", i, "_", f, "factors.txt", sep = "")
+#     sink(efa_file)
+#     print(EFA_results)
+#     sink()
+#     
+#     # Simplify model outputs: Write just factor loadings to textfile:
+#     #efa_loadings_file <- paste("EFA_", i, "_", f, "factors_loadingsONLY.txt", sep = "")
+#     #sink(efa_loadings_file)
+#     #print(EFA_results$loadings)
+#     #sink()
+#     
+#     # Simplify model outputs: Write factor loadings to csv file
+#     efa_loadings_csv <- paste("EFA_", i, "_", f, "factors_loadingsONLY.csv", sep = "")
+#     EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
+#     write.csv(EFA_loadings_only, file = efa_loadings_csv)
+# 
+#     #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+#     #drive_upload(efa_loadings_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+#     #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
+#     if (i == "pre" & f == 3){
+#       drive_update(file = as_id("1KmYFQYaNqNxtKCfkqPf9oEOzipse7WLi"), media = efa_file)  
+#       drive_update(file = as_id("1sxk_70W4MZnYG4LoOq0dbwOJ0-gaKiEB"), media = efa_loadings_csv) 
+#     }
+#     if (i == "post" & f == 3){
+#       drive_update(file = as_id("1WtknxTkcCc1dcBrOAd0VzvzsrbLQtef1"), media = efa_file)  
+#       drive_update(file = as_id("1AAn-gdBbpQyfthKemDLuUinha1PM3h7y"), media = efa_loadings_csv) 
+#     }
+#     if (i == "pre" & f == 6){
+#       drive_update(file = as_id("1o-BnY6VDmBCO9AH5F-ajy7nrFDFYH9rK"), media = efa_file)  
+#       drive_update(file = as_id("1mtbVNt6eoimoRFeNrKuko7CbRzpqtb0g"), media = efa_loadings_csv) 
+#     }
+#     if (i == "post" & f == 6){
+#       drive_update(file = as_id("18QF8at0WBq0yIjwCX44KKknDpZnNqufU"), media = efa_file)  
+#       drive_update(file = as_id("1FsrAdaf_ukXs391sHC4q-kzVBf1CTVVy"), media = efa_loadings_csv) 
+#     }
+#     file.remove(efa_file)
+#     file.remove(efa_loadings_csv)
+#   } # END loop through different number of factors
+# 
+#   # To output how much variance is accounted for by the factors:
+#   # Or just inspect the table of "Cumulative Var"
+#   #EFA_results$Vaccounted
+#   #EFA_results$Vaccounted[3, f] # i.e., last column of the "cumulative variance" row
+#   
+#   # Function "fa" will take either raw data or correlation matrix, butto get individual factor scores, need to input raw data 
+#   #EFA_rawdat_results <- fa(r = scaled_pre[,4:dim(scaled_pre)[2]], nfactors = 5, rotate = "promax", fm = "ml") 
+#   #EFA_rawdat_results$scores
+#   
+# } # END loop through pre and post
 
 ###################################################################################################################
 # FACTOR ANALYSIS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
@@ -370,7 +411,5 @@ for (i in time_point){
   #EFA_rawdat_results$scores
   
 } # END loop through pre and post
-
-
 
 
