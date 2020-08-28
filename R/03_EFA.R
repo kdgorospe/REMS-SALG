@@ -240,6 +240,10 @@ file.remove(KMO_name)
 # SCREE PLOTS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
 # RESULT: use 3 factors for PRE data; use 2 factors for POST data
 
+# NOTES on SCREE PLOTS: (from Howard 2016)
+# plots each eigenvalue on a graph and determine when decreases in successive eigenvalues start to asymptote
+# only include the number of factors up until the asymptote; these represent common variance better than the factors after the asymptote
+
 time_point <- c("pre", "post")
 for (i in time_point){
   
@@ -346,10 +350,11 @@ for (i in time_point){
 # Uses nfactors 2, 3, and 4 based on screeplot of final (i.e., filtered) data
 # Note: script produces results for pre and post data, but only the pre results are uploaded to Google Drive since this is the only one we care about for EFA
 
-# NOTE: set nfactors to results from Scree plot
-# NOTE: rotate = "promax" is what Goodwin 2016 used
-# NOTE: fm (factor method, aka factor extraction method): 
-# A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal).
+
+
+# set nfactors to results from Scree plot
+# rotate = "promax" what Goodwin 2016 used:
+# A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal)
 
 time_point <- c("pre", "post")
 for (i in time_point){

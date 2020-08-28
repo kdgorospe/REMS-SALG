@@ -2,8 +2,8 @@
 # Example: Data about student attitudes towards a career in marine science are from question 3.3 in 2013-2016 and from question 4.3 in 2017-2018 is given the label "attitudes_career"
 # kdgorospe@gmail.com
 
-require(tidyverse)
-require(googledrive)
+library(tidyverse)
+library(googledrive)
 
 ### The following creates a list of question IDs to be used for specifying the data structure
 question_id_list = list()
@@ -105,7 +105,7 @@ full_dat <- answer_dt %>%
 coded_dat <- full_dat %>% 
   mutate(concept = case_when(# question heading: "UNDERSTANDING"
                              question=="The ecology of coral reefs" ~ "understanding_ecology",
-                             question=="The scientific process" ~ "understandng_sciprocess",
+                             question=="The scientific process" ~ "understanding_sciprocess",
                              question=="How increasing carbon dioxide in the atmosphere contributes to ocean acidification and how this might affect the health of corals and many marine organisms" ~ "understanding_oceanacid_pooled",
                              question=="The effects of ocean acidification on marine organisms" ~ "understanding_oceanacid_split_organisms",
                              question=="The effects of atmospheric carbon dioxide on ocean chemistry" ~ "understanding_oceanacid_split_chemistry",
