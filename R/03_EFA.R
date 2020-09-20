@@ -147,20 +147,17 @@ for (i in time_point){
 
 # MOVING FORWARD: 
 # remove all binary responses from analysis (i.e., major_marinesci_yesno, major_notscience_yesno, etc) - EFA should be done on continuous or continuous-like data (e.g., Likert scale) but not binary data
-# remove attitudes_workwithothers, understanding_relatetolife, understanding_society_pooled in both pre and post data
-# Seems OK to do this since some of these concepts are captured by other questions (e.g., integration_connectingknowledge, integration_applyingknowledge)
+# Note: Deciding to keep these variables because they only failed the skewness test for the post data (attitudes_workwithothers, understanding_relatetolife, understanding_society_pooled) in both pre and post data
 
 # FIX IT: Add to end of analysis: Compare binary responses pre vs post with t-tests
-# FIX IT: For supplementary material, consider redoing analysis while retaining those variables that violated tests for normality to see how this affects results??
 
 # FILTER THESE OUT FOR NOW:
 
-variables_to_filter <- c("major_marinesci_yesno", "major_notscience_yesno", "major_science_yesno", "major_undecided_yesno", "major_unsurecollege_yesno",
-                         "attitudes_workwithothers", "understanding_relatetolife", "understanding_society_pooled")
+variables_to_filter <- c("major_marinesci_yesno", "major_notscience_yesno", "major_science_yesno", "major_undecided_yesno", "major_unsurecollege_yesno")
 tidy_dat_pre_final <- tidy_dat_pre %>%
   select(-(all_of(variables_to_filter))) # Use all_of to fix ambiguity of selecting columns, see: https://tidyselect.r-lib.org/reference/faq-external-vector.html
 tidy_dat_post_final <- tidy_dat_post %>%
-  select(-(all_of(variables_to_filter))) 
+  select(-(all_of(variables_to_filter)))
 
 # Additional EFA data inspection tests:
 
@@ -179,14 +176,14 @@ sink(bartlett_name)
 print(cortest.bartlett(R = pre_cor_matrix, n = nrow(tidy_dat_pre_final), diag = TRUE))
 sink()
 
-#drive_upload(bartlett_name, path = as_dribble("REMS_SALG/")) # for initial upload
-drive_update(file = as_id("16qk3hg-iUYo9iZhS9ecbFP_PZgMIZ3bv"), media = bartlett_name)  
+#drive_upload(bartlett_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+drive_update(file = as_id("1BYZtJo2aHaYPeqQdcgXDkWp1QknHo-ja"), media = bartlett_name)  
 file.remove(bartlett_name)
 
 # 2 - Kaiser, Meyer, Olkin measure of Sampling Adequacy
 
 KMO(r = pre_cor_matrix)
-# RESULS: Test shows all variables are above cutoff of 0.6 (actually, all are above 0.7)
+# RESULS: Test shows all variables are above cutoff of 0.6
 # This indicates that common variance (and thus latent factors) are present in the data
 
 # SAVE RESULTS:
@@ -195,8 +192,8 @@ sink(KMO_name)
 print(KMO(r = pre_cor_matrix))
 sink()
 
-#drive_upload(KMO_name, path = as_dribble("REMS_SALG/")) # for initial upload
-drive_update(file = as_id("1blC5LHL1QUtCh9Y0Xu7j-3AuAtXrpQNw"), media = KMO_name)  
+#drive_upload(KMO_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+drive_update(file = as_id("10A_EWtLwvLIm8MvhSbFLreR5MVp8zFUE"), media = KMO_name)  
 file.remove(KMO_name)
 
 ###################################################################################################################
@@ -239,6 +236,7 @@ file.remove(KMO_name)
 ###################################################################################################################
 # SCREE PLOTS (version 2: after filtering problematic variables; using tidy_dat_pre_final and tidy_dat_post_final)
 # RESULT: use 3 factors for PRE data; use 2 factors for POST data
+# Although code below does this for PRE and POST, only interested in PRE since this is what's used for the EFA
 
 # NOTES on SCREE PLOTS: (from Howard 2016)
 # plots each eigenvalue on a graph and determine when decreases in successive eigenvalues start to asymptote
@@ -263,14 +261,14 @@ for (i in time_point){
   pdf(file = scree_name)
   fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
   dev.off()
-  #drive_upload(scree_name, path = as_dribble("REMS_SALG/")) # for initial upload
+  #drive_upload(scree_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
 
   if (i == "pre"){
-    drive_update(file = as_id("10MDj7YS0qlW2wDFcihqjAlWn2hjkpECE"), media = scree_name)  
+    drive_update(file = as_id("1MwShJ2OoAf-DGWNIT7ntxaaHN1xl8hTC"), media = scree_name)
   }
-  # if (i == "post"){
-  #   drive_update(file = as_id("10MjeQ3I-0ioz_eu25hWEfXcfyuBcI-QM"), media = scree_name)  
-  # }
+  if (i == "post"){
+    drive_update(file = as_id("1ZZPEDbvscidbT9L4xqIIna4XlkZPbKYj"), media = scree_name)
+  }
   
   file.remove(scree_name)
   
@@ -350,8 +348,6 @@ for (i in time_point){
 # Uses nfactors 2, 3, and 4 based on screeplot of final (i.e., filtered) data
 # Note: script produces results for pre and post data, but only the pre results are uploaded to Google Drive since this is the only one we care about for EFA
 
-
-
 # set nfactors to results from Scree plot
 # rotate = "promax" what Goodwin 2016 used:
 # A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal)
@@ -363,7 +359,7 @@ for (i in time_point){
   cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
   cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
   
-  for (f in c(2, 3, 4)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
+  for (f in c(5, 6, 7)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
     EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
     
     # Write model outputs to textfile
@@ -385,18 +381,19 @@ for (i in time_point){
     
     #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
     #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    if (i == "pre" & f == 2){
-      drive_update(file = as_id("12iwgVtrcCZLp2DFY0bvGsBxFY1zYN3Y-"), media = efa_file)  
-      drive_update(file = as_id("1YIEGxl15e2RxdopY0KOnnFNoEoIhmImX"), media = efa_loadings_csv)
+    if (i == "pre" & f == 5){
+      drive_update(file = as_id("1M48aiuwL1cTeSdDUn4y6zpCa41xLyA7s"), media = efa_file)  # https://drive.google.com/file/d/1M48aiuwL1cTeSdDUn4y6zpCa41xLyA7s/view?usp=sharing
+      drive_update(file = as_id("11IG2BAaRi4FtKDDaBcbDXY8UFp_D5e4x"), media = efa_loadings_csv) # https://drive.google.com/file/d/11IG2BAaRi4FtKDDaBcbDXY8UFp_D5e4x/view?usp=sharing
     }
-    if (i == "pre" & f == 3){
-      drive_update(file = as_id("112q1ZEUSu5_BpmHp8dQofu9eBFo1xcdm"), media = efa_file)  
-      drive_update(file = as_id("1Bhxgj4ch5c9VKlKeQTui4eszEgIbGMln"), media = efa_loadings_csv) 
+    if (i == "pre" & f == 6){
+      drive_update(file = as_id("18mTQMQrcj0ta87XUOkxIO5QCh5K6M0-x"), media = efa_file)  # https://drive.google.com/file/d/18mTQMQrcj0ta87XUOkxIO5QCh5K6M0-x/view?usp=sharing
+      drive_update(file = as_id("1sXz29Qvy8k854Nvl_raFOonNCTZRl6om"), media = efa_loadings_csv) # https://drive.google.com/file/d/1sXz29Qvy8k854Nvl_raFOonNCTZRl6om/view?usp=sharing
     }
-    if (i == "pre" & f == 4){
-      drive_update(file = as_id("1Aap49QMTTRB0FcCjNCCVIbdliG2JbwCX"), media = efa_file)
-      drive_update(file = as_id("164dKLXu-CrvaRVseABblDGJDfvOdjaRA"), media = efa_loadings_csv) 
+    if (i == "pre" & f == 7){
+      drive_update(file = as_id("130dXp_ar8pzPxJ8DJfnkWZpGEp8dw6Dc"), media = efa_file) # https://drive.google.com/file/d/130dXp_ar8pzPxJ8DJfnkWZpGEp8dw6Dc/view?usp=sharing
+      drive_update(file = as_id("1i8vanJc2h5jh1mz40m1JwNGBRaOFOP1q"), media = efa_loadings_csv) # https://drive.google.com/file/d/1i8vanJc2h5jh1mz40m1JwNGBRaOFOP1q/view?usp=sharing
     }
+    
     # if (i == "post" & f == 2){
     #   drive_update(file = as_id("1nd1wHCAtxvkkCJ4AsIAVVTgasdJHqa8m"), media = efa_file)  
     #   drive_update(file = as_id("1hAKDhB-og4Sx3nZILAxGEQuZYCqVZptD"), media = efa_loadings_csv)
