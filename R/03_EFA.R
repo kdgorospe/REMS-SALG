@@ -147,7 +147,7 @@ for (i in time_point){
 
 # MOVING FORWARD: 
 # remove all binary responses from analysis (i.e., major_marinesci_yesno, major_notscience_yesno, etc) - EFA should be done on continuous or continuous-like data (e.g., Likert scale) but not binary data
-# Note: Deciding to keep these variables because they only failed the skewness test for the post data (attitudes_workwithothers, understanding_relatetolife, understanding_society_pooled) in both pre and post data
+# Note: Deciding to keep these variables because they only failed the skewness test for the post data (attitudes_workwithothers, understanding_relatetolife, understanding_society_pooled)
 
 # FIX IT: Add to end of analysis: Compare binary responses pre vs post with t-tests
 
