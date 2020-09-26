@@ -10,39 +10,53 @@ library(semTools)
 
 ######################################################################################################
 # RETAINING ALL VARIABLES (including cross-loading variables)
-model_4 <- '
+model_5 <- '
 xi_1 =~ attitudes_confidentresearch + skills_communicate_pooled + skills_developH0 + skills_evalH0 + skills_testH0 + skills_withothers + understanding_sciprocess
 xi_2 =~ attitudes_confidentunderstanding + understanding_ecology + understanding_fertilization + understanding_oceanacid_pooled + understanding_sciprocess + understanding_sound_pooled
 xi_3 =~ attitudes_career + attitudes_confidentunderstanding + attitudes_discussing + attitudes_enthusiastic + skills_withothers
 xi_4 =~ attitudes_confidentresearch + integration_applyingknowledge + integration_connectingknowledge
 xi_5 =~ understanding_relatetolife + understanding_society_pooled
  '
-# Calculate model fit for pre data and post data: tidy_dat_pre_final vs tidy_dat_post_final
-fit_pre_4 <- lavaan::cfa(model_4, data = tidy_dat_pre_final)
-fit_post_4 <- lavaan::cfa(model_4, data = tidy_dat_post_final)
-
-fit_pre_4
-fit_post_4
 
 ######################################################################################################
-# After removing ALL cross-loading variables: 
+# MEASUREMENT INVARIANCE FRAMEWORK FOR CONTINUOUS VARIABLES:
 
-# Using the 4-factor model 
-model_4_simple <- '
-xi_1 =~ skills_communicate_pooled + skills_developH0 + skills_evalH0 + skills_testH0
-xi_2 =~ understanding_ecology + understanding_fertilization + understanding_oceanacid_pooled + understanding_sound_pooled
-xi_3 =~ attitudes_career + attitudes_discussing + attitudes_enthusiastic
-xi_4 =~ integration_applyingknowledge + integration_connectingknowledge
-xi_5 =~ understanding_relatetolife + understanding_society_pooled
- '
+# FIX IT - before doing config, inspect overall model fit on PRE EFA?
 
-# Calculate model fit for pre data and post data: tidy_dat_pre_final vs tidy_dat_post_final
-fit_pre_4 <- lavaan::cfa(model_4_simple, data = tidy_dat_pre_final)
-fit_post_4 <- lavaan::cfa(model_4_simple, data = tidy_dat_post_final)
+# Combine the pre and post dataframes to compare them in a CFA measurement invariance framework
+tidy_dat_all <- rbind.data.frame(tidy_dat_pre_final, tidy_dat_post_final)
 
-fit_pre_4
-fit_post_4
+# First test the baseline configuration model (the pre data EFA model), then test for weak, strong, strict measurement invariance
+config <- lavaan::cfa(model_5, data = tidy_dat_all, group = "test")
 
+# See "RMSEA" in summary output for measure for model fit
+summary(config, standardized = TRUE, fit.measures = TRUE)
+moreFitIndices(config)
+
+# For graphical representations of the model:
+semPaths(config, "std")
+
+weak <- lavaan::cfa(model_5, data = tidy_dat_all, group = "test", group.equal = "loadings")
+strong <- lavaan::cfa(model_5, data = tidy_dat_all, group = "test", group.equal = c("loadings", "intercepts"))
+strict <- lavaan::cfa(model_5, data = tidy_dat_all, group = "test", group.equal = c("loadings", "intercepts", "residuals"))
+anova(config, weak, strong, strict)
+
+measurementInvariance(model = model_5, data = tidy_dat_all, group = "test")
+
+######################################################################################################
+# MEASUREMENT INVARIANCE FRAMEWORK FOR ORDINAL VARIABLES: may be more appropriate since these are Likert scale data
+
+ordinal_model_fit <- lavaan::cfa(model_5, 
+                                 ordered = c("attitudes_career", "attitudes_confidentresearch", "attitudes_confidentunderstanding",
+                                                      "attitudes_discussing", "attitudes_enthusiastic", "attitudes_workwithothers", 
+                                                      "integration_applyingknowledge", "integration_connectingknowledge", "skills_communicate_pooled",
+                                                      "skills_developH0", "skills_evalH0", "skills_testH0", "skills_withothers", "understanding_ecology",
+                                                      "understanding_fertilization", "understanding_oceanacid_pooled", "understanding_relatetolife",
+                                                      "understanding_sciprocess", "understanding_society_pooled", "understanding_sound_pooled"),
+                                 data = tidy_dat_all)
+
+######################################################################################################
+# Consider repeating analysis after removing cross-loading variables?
 
 ######################################################################################################
 # OLD ANALYSIS WITH DROPPED VARIABLES: (attitudes_workwithothers, understanding_relatetolife, understanding_society_pooled)
