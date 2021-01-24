@@ -1,5 +1,6 @@
 # Do confirmatory factor analysis of pre vs. post using the results from EFA on pre-data as the confirmed model
 # kdgorospe@gmail.com
+# See: HIRSCHFELD and VON BRACHEL 2014 in "Resources" folder
 
 library(lavaan)
 library(semPlot)
