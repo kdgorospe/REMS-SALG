@@ -154,6 +154,10 @@ for (i in time_point){
 # FILTER THESE OUT FOR NOW:
 
 variables_to_filter <- c("major_marinesci_yesno", "major_notscience_yesno", "major_science_yesno", "major_undecided_yesno", "major_unsurecollege_yesno")
+# Also can try removing questions that were split and then pooled in different years
+# variables_to_filter <- c("major_marinesci_yesno", "major_notscience_yesno", "major_science_yesno", "major_undecided_yesno", "major_unsurecollege_yesno", 
+#                          "skills_communicate_pooled", "understanding_oceanacid_pooled", "understanding_society_pooled", "understanding_sound_pooled")
+
 tidy_dat_pre_final <- tidy_dat_pre %>%
   select(-(all_of(variables_to_filter))) # Use all_of to fix ambiguity of selecting columns, see: https://tidyselect.r-lib.org/reference/faq-external-vector.html
 tidy_dat_post_final <- tidy_dat_post %>%
@@ -176,8 +180,9 @@ sink(bartlett_name)
 print(cortest.bartlett(R = pre_cor_matrix, n = nrow(tidy_dat_pre_final), diag = TRUE))
 sink()
 
-#drive_upload(bartlett_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
-drive_update(file = as_id("1BYZtJo2aHaYPeqQdcgXDkWp1QknHo-ja"), media = bartlett_name)  
+drive_upload(bartlett_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Only use drive_update for files that we want to be overwritten
+#drive_update(file = as_id("1BYZtJo2aHaYPeqQdcgXDkWp1QknHo-ja"), media = bartlett_name)  
 file.remove(bartlett_name)
 
 # 2 - Kaiser, Meyer, Olkin measure of Sampling Adequacy
@@ -192,8 +197,8 @@ sink(KMO_name)
 print(KMO(r = pre_cor_matrix))
 sink()
 
-#drive_upload(KMO_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
-drive_update(file = as_id("10A_EWtLwvLIm8MvhSbFLreR5MVp8zFUE"), media = KMO_name)  
+drive_upload(KMO_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+#drive_update(file = as_id("10A_EWtLwvLIm8MvhSbFLreR5MVp8zFUE"), media = KMO_name)  
 file.remove(KMO_name)
 
 ###################################################################################################################
@@ -261,14 +266,15 @@ for (i in time_point){
   pdf(file = scree_name)
   fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
   dev.off()
-  #drive_upload(scree_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+  drive_upload(scree_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
 
-  if (i == "pre"){
-    drive_update(file = as_id("1MwShJ2OoAf-DGWNIT7ntxaaHN1xl8hTC"), media = scree_name)
-  }
-  if (i == "post"){
-    drive_update(file = as_id("1ZZPEDbvscidbT9L4xqIIna4XlkZPbKYj"), media = scree_name)
-  }
+  # Only use drive_update if we want files to be overwritten
+  # if (i == "pre"){
+  #   drive_update(file = as_id("1MwShJ2OoAf-DGWNIT7ntxaaHN1xl8hTC"), media = scree_name)
+  # }
+  # if (i == "post"){
+  #   drive_update(file = as_id("1ZZPEDbvscidbT9L4xqIIna4XlkZPbKYj"), media = scree_name)
+  # }
   
   file.remove(scree_name)
   
@@ -379,29 +385,23 @@ for (i in time_point){
     EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
     write.csv(EFA_loadings_only, file = efa_loadings_csv)
     
-    #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    if (i == "pre" & f == 5){
-      drive_update(file = as_id("1M48aiuwL1cTeSdDUn4y6zpCa41xLyA7s"), media = efa_file)  # https://drive.google.com/file/d/1M48aiuwL1cTeSdDUn4y6zpCa41xLyA7s/view?usp=sharing
-      drive_update(file = as_id("11IG2BAaRi4FtKDDaBcbDXY8UFp_D5e4x"), media = efa_loadings_csv) # https://drive.google.com/file/d/11IG2BAaRi4FtKDDaBcbDXY8UFp_D5e4x/view?usp=sharing
-    }
-    if (i == "pre" & f == 6){
-      drive_update(file = as_id("18mTQMQrcj0ta87XUOkxIO5QCh5K6M0-x"), media = efa_file)  # https://drive.google.com/file/d/18mTQMQrcj0ta87XUOkxIO5QCh5K6M0-x/view?usp=sharing
-      drive_update(file = as_id("1sXz29Qvy8k854Nvl_raFOonNCTZRl6om"), media = efa_loadings_csv) # https://drive.google.com/file/d/1sXz29Qvy8k854Nvl_raFOonNCTZRl6om/view?usp=sharing
-    }
-    if (i == "pre" & f == 7){
-      drive_update(file = as_id("130dXp_ar8pzPxJ8DJfnkWZpGEp8dw6Dc"), media = efa_file) # https://drive.google.com/file/d/130dXp_ar8pzPxJ8DJfnkWZpGEp8dw6Dc/view?usp=sharing
-      drive_update(file = as_id("1i8vanJc2h5jh1mz40m1JwNGBRaOFOP1q"), media = efa_loadings_csv) # https://drive.google.com/file/d/1i8vanJc2h5jh1mz40m1JwNGBRaOFOP1q/view?usp=sharing
-    }
+    drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
     
-    # if (i == "post" & f == 2){
-    #   drive_update(file = as_id("1nd1wHCAtxvkkCJ4AsIAVVTgasdJHqa8m"), media = efa_file)  
-    #   drive_update(file = as_id("1hAKDhB-og4Sx3nZILAxGEQuZYCqVZptD"), media = efa_loadings_csv)
+    # Only use drive_update to overwrite files
+    # if (i == "pre" & f == 5){
+    #   drive_update(file = as_id("1M48aiuwL1cTeSdDUn4y6zpCa41xLyA7s"), media = efa_file)  # https://drive.google.com/file/d/1M48aiuwL1cTeSdDUn4y6zpCa41xLyA7s/view?usp=sharing
+    #   drive_update(file = as_id("11IG2BAaRi4FtKDDaBcbDXY8UFp_D5e4x"), media = efa_loadings_csv) # https://drive.google.com/file/d/11IG2BAaRi4FtKDDaBcbDXY8UFp_D5e4x/view?usp=sharing
     # }
-    # if (i == "post" & f == 3){
-    #   drive_update(file = as_id("12xuQyZ0nD0xp6VQTwYb9kgW02Gy5n3QV"), media = efa_file)  
-    #   drive_update(file = as_id("1MXunNhg7CFSrr73T3yNEV-t0Wlbe2fHO"), media = efa_loadings_csv)
+    # if (i == "pre" & f == 6){
+    #   drive_update(file = as_id("18mTQMQrcj0ta87XUOkxIO5QCh5K6M0-x"), media = efa_file)  # https://drive.google.com/file/d/18mTQMQrcj0ta87XUOkxIO5QCh5K6M0-x/view?usp=sharing
+    #   drive_update(file = as_id("1sXz29Qvy8k854Nvl_raFOonNCTZRl6om"), media = efa_loadings_csv) # https://drive.google.com/file/d/1sXz29Qvy8k854Nvl_raFOonNCTZRl6om/view?usp=sharing
     # }
+    # if (i == "pre" & f == 7){
+    #   drive_update(file = as_id("130dXp_ar8pzPxJ8DJfnkWZpGEp8dw6Dc"), media = efa_file) # https://drive.google.com/file/d/130dXp_ar8pzPxJ8DJfnkWZpGEp8dw6Dc/view?usp=sharing
+    #   drive_update(file = as_id("1i8vanJc2h5jh1mz40m1JwNGBRaOFOP1q"), media = efa_loadings_csv) # https://drive.google.com/file/d/1i8vanJc2h5jh1mz40m1JwNGBRaOFOP1q/view?usp=sharing
+    # }
+    
     file.remove(efa_file)
     file.remove(efa_loadings_csv)
     

@@ -215,10 +215,51 @@ coded_and_standardized_dat <- coded_and_standardized_dat %>%
 # while in other years the wording is split: "Communicate the results of a research project in written format" and "Communicate the results of a research project in oral format"
 
 # View pooled vs split data:
-#coded_dat %>%
-#  filter(str_detect(coded_dat$concept, "pooled"))
-#coded_dat %>% 
-#  filter(str_detect(coded_dat$concept, "split"))
+coded_and_standardized_dat %>%
+  filter(str_detect(coded_and_standardized_dat$concept, "pooled")) %>%
+  select(concept) %>% unique()
+coded_and_standardized_dat %>%
+  filter(str_detect(coded_and_standardized_dat$concept, "split")) %>%
+  select(concept) %>% unique()
+
+# Only need to plot once:
+# concept_patterns <- c("skills_communicate", "understanding_oceanacid", "understanding_society", "understanding_sound")
+# split_concept_patterns <- paste(concept_patterns, "_split", sep = "")
+# # Warning message: Removed X rows for stat_boxplot and geom_point is for datapoints with missing student response
+# for (i in 1:length(concept_patterns)){
+#   p <- ggplot() +
+#     geom_boxplot(data = coded_and_standardized_dat %>% filter(str_detect(coded_and_standardized_dat$concept, concept_patterns[i])),
+#                  aes(x = answer, y = concept)) +
+#     geom_jitter(data = coded_and_standardized_dat %>% filter(str_detect(coded_and_standardized_dat$concept, concept_patterns[i])),
+#                 aes(x = answer, y = concept)) +
+#     labs(x = "", y = "")
+#   plot(p)
+#   rm(p)
+#   box_png <- paste(concept_patterns[i], "_boxplot.png", sep = "")
+#   ggsave(box_png, width = 8, height = 8)
+#   drive_upload(box_png, path = as_dribble("REMS_SALG/Results/Supplementary Information"))
+#   file.remove(box_png)
+#   
+#   plot_dat <- coded_and_standardized_dat %>% 
+#     filter(str_detect(coded_and_standardized_dat$concept, split_concept_patterns[i])) %>% 
+#     pivot_wider(id_cols = c(Number, year, test), names_from = concept, values_from = answer)
+#   p <- ggplot(data = plot_dat,
+#               mapping = aes(x = !!as.symbol(names(plot_dat)[4]), y = !!as.symbol(names(plot_dat)[5]))) +
+#     geom_jitter() +
+#     geom_smooth(method = lm, fullrange = TRUE) +
+#     coord_cartesian(xlim = c(0.5, 6.5), ylim = c(0.5, 6.5)) +
+#     geom_abline(slope = 1, intercept = 0) +
+#     annotate(x=1.5, y=6, 
+#              label=paste("r^2 = ", round(cor(plot_dat[[4]], plot_dat[[5]], use = "complete.obs"), 2)), 
+#              geom="text", size=5)
+#   plot(p)
+#   rm(p)
+#   corr_png <- paste(concept_patterns[i], "_correlation.png", sep = "")
+#   ggsave(corr_png, width = 8, height = 8)
+#   drive_upload(corr_png, path = as_dribble("REMS_SALG/Results/Supplementary Information"))
+#   file.remove(corr_png)
+# }
+
 
 # Mutate the column "concept" so that corresponding "split" questions have the same label, allowing them to be grouped together, and for their answers to be averaged
 # i.e., mutate "skills_communicate_split_written" and "skills_communicate_split_oral" to "skills_communicate_split"
