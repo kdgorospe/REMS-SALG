@@ -11,8 +11,88 @@ library(tidyverse)
 
 # Restarting point
 load("2021-02-13_all-data-prior-to-CFA_pooled-vars-removed.RData") 
+# REMINDER: dropping pooled variables because when analyzing these as ORDINAL variables, categories must be present in both the pre and post groups
+# Pooled variables range from 1 to 6 in increments of 0.5 because responses were averaged
+# Example: compare tidy_dat_all %>% filter(test == "pre") %>% select(understanding_sound_pooled) %>% table() versus
+# tidy_dat_all %>% filter(test == "post") %>% select(understanding_sound_pooled) %>% table()
+# Requires complex collapsing of responses
+
+# Old dataset where pooled variables are retained
+# load("2021-02-13_all-data-prior-to-CFA_all-vars.RData") 
 
 ######################################################################################################
+# ANALYSIS OF ORDINAL VARIABLES following Liu et al. 2017
+
+# Combine the pre and post dataframes to compare them in a CFA measurement invariance framework
+tidy_dat_all <- rbind.data.frame(tidy_dat_pre_final, tidy_dat_post_final)
+
+# model_6 only includes largest loading per variable (i.e., remove double loadings for attitudes_confidentresearch and attitudes_confidentunderstanding)
+# Note: doesn't change results significantly compared to allowing multiple loadings per variable
+model_5 <- '
+hypothesis =~ attitudes_confidentresearch + skills_developH0 + skills_evalH0 + skills_testH0 + understanding_sciprocess
+identity =~ attitudes_career + attitudes_discussing + attitudes_enthusiastic 
+practice =~ attitudes_confidentresearch + integration_applyingknowledge + integration_connectingknowledge
+knowledge =~ attitudes_confidentunderstanding + understanding_ecology + understanding_fertilization
+peers =~ attitudes_workwithothers + skills_withothers
+ '
+
+# BEFORE PASSING TO ORDINAL FRAMEWORK - NEED TO COLLAPSE RESPONSES THAT ARE NOT PRESENT IN ONE GROUP VS THE OTHER
+# Example: table(tidy_dat_all %>% filter(test == "pre") %>% select(attitudes_confidentresearch))
+# vs: table(tidy_dat_all %>% filter(test == "post") %>% select(attitudes_confidentresearch))
+# i.e., need to collapse the "2" response in the pre-test to be "3"
+dat_collapse_responses <- tidy_dat_all %>%
+  mutate(attitudes_confidentresearch = if_else(attitudes_confidentresearch == 2, true = 3, false = attitudes_confidentresearch),
+         skills_developH0 = if_else(skills_developH0 == 2, true = 3, false = skills_developH0),
+         skills_evalH0 = if_else(skills_evalH0 == 2, true = 3, false = skills_evalH0),
+         skills_testH0 = if_else(skills_testH0 == 2, true = 3, false = skills_testH0),
+         understanding_sciprocess = if_else(understanding_sciprocess %in% c(1, 2, 3), true = 4, false = understanding_sciprocess),
+         attitudes_career = if_else(attitudes_career == 1, true = 2, false = attitudes_career),
+         attitudes_discussing = if_else(attitudes_discussing %in% c(2, 3), true = 4, false = attitudes_discussing),
+         attitudes_confidentunderstanding = if_else(attitudes_confidentunderstanding == 2, true = 3, false = attitudes_confidentunderstanding),
+         understanding_ecology = if_else(understanding_ecology %in% c(1, 2, 3), true = 4, false = understanding_ecology),
+         understanding_fertilization = if_else(understanding_fertilization %in% c(1, 2), true = 3, false = understanding_fertilization))
+
+
+# See ?measEq.syntax (new function in semTools, replaces measurementInvariance functions)
+measEq.syntax(configural.model = model_5,
+              data = dat_collapse_responses,
+              group = "test",
+              ordered = TRUE,
+              parameterization = "theta",
+              ID.fac = "std.lv",
+              ID.cat = "Wu.Estabrook.2016" # default method for variances/intercepts of ordered inidcators
+              )
+
+
+# LEFT OFF HERE: Continue following help file for measEq.syntax
+
+######################################################################################################
+# NEXT, REPEAT ANALYSIS FROM ABOVE BUT SPECIFY THAT THESE ARE ORDINAL VARIABLES: may be more appropriate since these are Likert scale data
+
+ordinal_model_fit <- lavaan::cfa(model_5, 
+                                 ordered = TRUE,
+                                 data = tidy_dat_all, std.lv = TRUE)
+
+
+summary(ordinal_model_fit, standardized = TRUE, fit.measures = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################################
+# OLD CODE FOR CONTINUOUS VARIABLES:
 # NOTE: after dropping pooled questions, understanding_relatetolife doesn't load strongly to any latent variable - dropped from CFA
 model_5 <- '
 hypothesis =~ attitudes_confidentresearch + skills_developH0 + skills_evalH0 + skills_testH0 + understanding_sciprocess
@@ -23,7 +103,7 @@ peers =~ attitudes_workwithothers + skills_withothers
  '
 
 # Tried only using the largest loading per variable (i.e., remove double loadings for attitudes_confidentresearch and attitudes_confidentunderstanding)
-# Note: doesn't change results significantly
+# Note: doesn't change results significantly compared to when allowing multiple loadings per variable
 # model_6 <- '
 # hypothesis =~ skills_communicate_pooled + skills_developH0 + skills_evalH0 + skills_testH0 + understanding_sciprocess
 # marine_sci =~ understanding_ecology + understanding_fertilization + understanding_oceanacid_pooled + understanding_sound_pooled
@@ -137,7 +217,6 @@ ordinal_weak <- lavaan::cfa(model_5,
                             group = "test", 
                             group.equal = "loadings")
 
-#### LEFT OFF HERE - apaprently semTools::difftest no longer being used (Hirschfield 2014 is outdated)
 # More recent guide that also covers measurement invariance: 
 # Liu, Y., Millsap, R. E., West, S. G., Tein, J.-Y., Tanaka, R., & Grimm, K. J. (2017). Testing measurement invariance in longitudinal data with ordered-categorical measures. Psychological Methods, 22(3), 486–506. https://doi.org/10.1037/met0000075 
 semTools::difftest(ordinal_config,
