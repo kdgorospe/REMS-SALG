@@ -2,7 +2,8 @@
 # Purpose of this is to demonstrate that the SALG's ability to measure latent factors was equivalent across groups (i.e., the EFA model holds over time pre vs post)
 # Once this is established, can make comparisons about the means of latent groups
 # kdgorospe@gmail.com
-# See: HIRSCHFELD and VON BRACHEL 2014 in "Resources" folder
+# Based on: HIRSCHFELD and VON BRACHEL 2014
+# and SVETINA et al 2019 (which implements Wu and Estabrook 2016) in "Resources" folder
 
 rm(list=ls())
 
@@ -23,12 +24,15 @@ load("2021-02-13_all-data-prior-to-CFA_pooled-vars-removed.RData")
 # load("2021-02-13_all-data-prior-to-CFA_all-vars.RData") 
 
 ######################################################################################################
-# ANALYSIS OF ORDINAL VARIABLES following Svetina et al. 2019
+# MEASUREMENT INVARIANCE ANALYSIS OF ORDINAL VARIABLES following Svetina et al. 2019
 
 # Combine the pre and post dataframes to compare them in a CFA measurement invariance framework
 tidy_dat_all <- rbind.data.frame(tidy_dat_pre_final, tidy_dat_post_final)
 
-# See EFA Results for factor loadings: https://docs.google.com/spreadsheets/d/1tdV4XQ7nGztUB8mkZum80B1sZfK9OGm8Q5KkHtjvA2Q/edit?usp=sharing
+# FIX IT:
+# Only allow one item to load onto each latent variable (assumption with CFA is that each items loads equally)
+# NOTE: MAY NOT USE 5-FACTOR MODEL BECAUSE LESS THAN 3 ITEMS LOAD ONTO "PEERS"
+# See EFA Results for FIVE factor loadings: https://docs.google.com/spreadsheets/d/1tdV4XQ7nGztUB8mkZum80B1sZfK9OGm8Q5KkHtjvA2Q/edit?usp=sharing
 model_5 <- '
 hypothesis =~ attitudes_confidentresearch + skills_developH0 + skills_evalH0 + skills_testH0 + understanding_sciprocess
 identity =~ attitudes_career + attitudes_discussing + attitudes_enthusiastic 
@@ -36,15 +40,6 @@ integration =~ attitudes_confidentresearch + integration_applyingknowledge + int
 knowledge =~ attitudes_confidentunderstanding + understanding_ecology + understanding_fertilization
 peers =~ attitudes_workwithothers + skills_withothers
  '
-
-# Version that only allows observations to load to one latent variable (i.e., remove attitudes_confidentresearch from hypothesis latent var)
-# model_5 <- '
-# hypothesis =~ skills_developH0 + skills_evalH0 + skills_testH0 + understanding_sciprocess
-# identity =~ attitudes_career + attitudes_discussing + attitudes_enthusiastic 
-# integration =~ attitudes_confidentresearch + integration_applyingknowledge + integration_connectingknowledge
-# knowledge =~ attitudes_confidentunderstanding + understanding_ecology + understanding_fertilization
-# peers =~ attitudes_workwithothers + skills_withothers
-#  '
 
 # BEFORE PASSING TO ORDINAL FRAMEWORK - NEED TO COLLAPSE RESPONSES THAT ARE NOT PRESENT IN ONE GROUP VS THE OTHER
 # Example: table(tidy_dat_all %>% filter(test == "pre") %>% select(attitudes_confidentresearch))
