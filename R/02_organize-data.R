@@ -190,9 +190,24 @@ file.remove("coded_dat.csv")
 
 ### Before doing any analysis, clean data: 
 
-# 1 - Response value 9 = NA
+# 1 - Standardize scale and replace numbers with NA's: For some questions the true Likert scale is 1 to 5, and 9 = NA; For other questions the true Likert scale is 2 to 6, and 1 = NA
+
+# SOLUTION: set all scales to be 2 to 6 with 1 as NA; i.e., for questions where 9 = NA, reset "1 to 5" as "2 to 6" and change 9 to NA
+# For other questions, change 1 to NA
+# See Christine's emailed list of questions with 9 = NA
 coded_and_standardized_dat <- coded_dat %>%
-  mutate_all(~na_if(., 9))
+  mutate_all(~na_if(., 9)) %>%
+  mutate(answer = as.numeric(answer)) %>%
+  mutate(answer = case_when(q_number %in% c("6.1", "6.2", "6.3", "6.4", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11") & test == "post" & year %in% c("2013", "2014", "2015") ~ answer + 1,
+                            q_number %in% c("6.1", "6.2", "6.3", "6.4", "6.4", "6.5", "6.6", "6.7", "6.8") & test == "post" & year == "2016" ~ answer + 1,
+                            q_number %in% c("7.1", "7.2") & test == "post" & year %in% c("2014", "2015", "2016") ~ answer + 1,
+                            q_number %in% c("2.1", "2.2", "2.3") & year %in% c("2017", "2018") ~ answer + 1, # both pre and post
+                            q_number %in% c("7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "8.1", "8.2") ~ answer + 1,
+                            TRUE ~ answer)) %>%
+  # Now all "1"s should be NAs EXCEPT for concepts concerning their major (e.g., "major_marinesci_yesno", "major_undecided_yes_no", "major_multiplechoice", etc)
+  mutate(answer = if_else(str_detect(concept, "major")==FALSE, true = NaN, false = answer))
+
+# 1b: For some questions; 
 
 # 2 - Deal with questions with changing Likert Scales
 # For 2017 and 2018, these questions changed to Likert scale ONE to SIX: understanding_relatetolife, understanding_society_split_realissues, understanding_society_split_society (additionally, the latter two were "pooled" but we'll deal with that in the next cleaning step)
