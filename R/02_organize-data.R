@@ -194,38 +194,43 @@ file.remove("coded_dat.csv")
 
 # SOLUTION: set all scales to be 2 to 6 with 1 as NA; i.e., for questions where 9 = NA, reset "1 to 5" as "2 to 6" and change 9 to NA
 # For other questions, change 1 to NA
-# See Christine's emailed list of questions with 9 = NA
+# From Christine's email 2021 Apr 02
+# All the items are 5-point scale Likert questions with an additional “not applicable” choice. The 'N/A' either comes first and is scored 1 on the CSV file (the rest of the scale being 2-6), or comes last and is scored as a 9 (the rest of the scale being 1-5). 
+# If you look at an instrument page on one of the SALG CSV’s you can see what I mean. For my analyses, I just transformed all the scales to have the ’N/A’ option as a 1, with the rest of the scale 2-6. But now I’m going to delete the ’N/A’ option entirely and focus on the “true” 5-point Likert scale.
+
+# Here is the list of questions with the ’N/A’ last (and scored as a 9):
+# 2013 - POST 6.1-11
+# 2014 - POST 6.1-11, 7.1-2
+# 2015 - Student POST 6.1-11, 7.1-2; Mentor PRE and POST 6.1-5
+# 2016 - Student POST 6.1-8, 7.1-2; Mentor PRE 6.1-7, Mentor POST 6.1-8, 7.1-2, 8.1-7
+# 2017/18 - Student PRE 2.1-3, Student POST 2.1-3, 7.1-6, 8.1-2; Mentor PRE 2.1-3, 7.1-7, Mentor POST 2.1-3, 7.1-6, 8.1-2, 9.1-7
 coded_and_standardized_dat <- coded_dat %>%
   mutate_all(~na_if(., 9)) %>%
   mutate(answer = as.numeric(answer)) %>%
+  # Using Christine's list above, for all questions with NA scored as 9, move answers up by 1 - i.e., ultimately, want all scales to be 2 to 6
   mutate(answer = case_when(q_number %in% c("6.1", "6.2", "6.3", "6.4", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11") & test == "post" & year %in% c("2013", "2014", "2015") ~ answer + 1,
                             q_number %in% c("6.1", "6.2", "6.3", "6.4", "6.4", "6.5", "6.6", "6.7", "6.8") & test == "post" & year == "2016" ~ answer + 1,
                             q_number %in% c("7.1", "7.2") & test == "post" & year %in% c("2014", "2015", "2016") ~ answer + 1,
                             q_number %in% c("2.1", "2.2", "2.3") & year %in% c("2017", "2018") ~ answer + 1, # both pre and post
                             q_number %in% c("7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "8.1", "8.2") ~ answer + 1,
                             TRUE ~ answer)) %>%
-  # Now all "1"s should be NAs EXCEPT for concepts concerning their major (e.g., "major_marinesci_yesno", "major_undecided_yes_no", "major_multiplechoice", etc)
-  mutate(answer = if_else(str_detect(concept, "major")==FALSE, true = NaN, false = answer))
+  # After moving all relevant scales to be 2 to 6, all "1"s are NAs EXCEPT for concepts concerning their major (e.g., "major_marinesci_yesno", "major_undecided_yes_no", "major_multiplechoice", etc)
+  # Convert all questions about college major to NAs
+  mutate(answer = if_else(str_detect(concept, "major"), true = NaN, false = answer)) %>%
+  # After converting all questions about college major to NAs, NOW **ALL** "1"s are NAs
+  mutate_all(~na_if(., 1))
 
-# 1b: For some questions; 
+# Check: no more "1"s because they've all been conerted to NAs
+table(coded_and_standardized_dat$concept, coded_and_standardized_dat$answer)
+coded_and_standardized_dat %>%
+  filter(answer == 1)
+# Also no more "9"s because they've all been converted to NAs
+coded_and_standardized_dat %>%
+  filter(answer == 9)
 
-# 2 - Deal with questions with changing Likert Scales
-# For 2017 and 2018, these questions changed to Likert scale ONE to SIX: understanding_relatetolife, understanding_society_split_realissues, understanding_society_split_society (additionally, the latter two were "pooled" but we'll deal with that in the next cleaning step)
-# Scale them to be between ONE and SIX by multiplying all responses by 6/5
-# View the problem:
-#coded_and_standardized_dat %>%
-#  filter(str_detect(concept, pattern = "understanding_relatetolife|understanding_society_pooled|understanding_society_split")) %>%
-#  group_by(concept, year) %>%
-#  summarise(max = max(answer, na.rm = TRUE))
 
-# Scale 2017 and 2018 data to be ONE to SIX (2017 and 2018 data Likert scale was 1 to 5; but prior to 2017, Likert scale was 1 to 6)
-coded_and_standardized_dat <- coded_and_standardized_dat %>%
-  mutate(answer = case_when((str_detect(concept, "understanding_relatetolife") & year>=2017) ~ answer * 6/5,
-                            (str_detect(concept, "understanding_society_split_realissues") & year>=2017) ~ answer * 6/5,
-                            (str_detect(concept, "understanding_society_split_society") & year>=2017) ~ answer * 6/5,
-                            TRUE ~ as.numeric(answer)))
 
-# 3 - DEAL WITH inconsistent questions:
+# 2 - DEAL WITH inconsistent questions:
 # SPLIT vs POOLED questions: In some years, the question wording is: "Communicate the results of a research project in written and/or oral format skills" (POOLED) 
 # while in other years the wording is split: "Communicate the results of a research project in written format" and "Communicate the results of a research project in oral format"
 
@@ -291,15 +296,16 @@ coded_and_standardized_dat <- coded_and_standardized_dat %>%
   mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="split", replacement = "pooled"),
                              TRUE ~ concept))
 
-# 4 - Switch answers for Yes=1/No=2 to Yes=2/No=1 for all questions: Are you interested in majoring in Marine Science? Not science? Science? Undecided? Unsure about College?
+# FOLLOWING SECTIONS NO LONGER RELEVANT TO ANALYSIS (all questions about college major replaced with NAs above)
+# 3 - Switch answers for Yes=1/No=2 to Yes=2/No=1 for all questions: Are you interested in majoring in Marine Science? Not science? Science? Undecided? Unsure about College?
 # i.e., direction of variable is such that response is larger when positively associated with science to match direction of Likert scale variables 
 
-coded_and_standardized_dat <- coded_and_standardized_dat %>%
-  mutate(pooled_answer = case_when(str_detect(concept, "yesno") & pooled_answer == 1 ~ 2,
-                                   str_detect(concept, "yesno") & pooled_answer == 2 ~ 1,
-                                   TRUE ~ pooled_answer))
+# coded_and_standardized_dat <- coded_and_standardized_dat %>%
+#   mutate(pooled_answer = case_when(str_detect(concept, "yesno") & pooled_answer == 1 ~ 2,
+#                                    str_detect(concept, "yesno") & pooled_answer == 2 ~ 1,
+#                                    TRUE ~ pooled_answer))
 
-# 5 - Deal with questions about Major and College plans which changed from Yes/NO (2013 - 2017) to multiple choice in 2018
+# 4 - Deal with questions about Major and College plans which changed from Yes/NO (2013 - 2017) to multiple choice in 2018
 # CAVEAT: when the question was YES/NO, students were allowed to indicate multiple majors (they could say yes multiple times as opposed to just selecting one major)
 # View the problem:
 #coded_and_standardized_dat %>%
@@ -312,24 +318,24 @@ coded_and_standardized_dat <- coded_and_standardized_dat %>%
 # But doesn't assume whether the student would answer YES/NO to any of the other multiple choices
 # Example: if student said their preferred major was Marine Science (multiple choice), this is converted to a "YES" to the question, Are you interested in majoring in Marine science? 
 # But rather than assuming that the student would answer "NO" to the other questions (Are you interested in majoring in a science? non-science? undecided? unsure about college?), we just leave these BLANK
-multichoice_to_yesno <- coded_and_standardized_dat %>%
-  filter(concept == "major_multiplechoice") %>%
-  # Use their answer to the multiple choice to assign corresponding YES/NO concept
-  mutate(concept = case_when(pooled_answer == 1 ~ "major_marinesci_yesno",
-                             pooled_answer == 2 ~ "major_science_yesno",
-                             pooled_answer == 3 ~ "major_notscience_yesno",
-                             pooled_answer == 4 ~ "major_undecided_yesno",
-                             pooled_answer == 5 ~ "major_unsurecollege_yesno",
-                             TRUE ~ concept)) %>%
-  # Now convert all answers to YES = 2
-  mutate(pooled_answer = 2)
+# multichoice_to_yesno <- coded_and_standardized_dat %>%
+#   filter(concept == "major_multiplechoice") %>%
+#   # Use their answer to the multiple choice to assign corresponding YES/NO concept
+#   mutate(concept = case_when(pooled_answer == 1 ~ "major_marinesci_yesno",
+#                              pooled_answer == 2 ~ "major_science_yesno",
+#                              pooled_answer == 3 ~ "major_notscience_yesno",
+#                              pooled_answer == 4 ~ "major_undecided_yesno",
+#                              pooled_answer == 5 ~ "major_unsurecollege_yesno",
+#                              TRUE ~ concept)) %>%
+#   # Now convert all answers to YES = 2
+#   mutate(pooled_answer = 2)
 
 
 # Now filter out old answers (multiple choice) and replace them with the new YES/NO versions:
-coded_and_standardized_dat <- coded_and_standardized_dat %>% 
-  filter(concept != "major_multiplechoice") %>%
-  rbind(multichoice_to_yesno) %>%
-  arrange(concept, test, year, Number)
+# coded_and_standardized_dat <- coded_and_standardized_dat %>% 
+#   filter(concept != "major_multiplechoice") %>%
+#   rbind(multichoice_to_yesno) %>%
+#   arrange(concept, test, year, Number)
 
 
 write.csv(coded_and_standardized_dat, "coded_and_standardized_dat.csv", row.names = FALSE)
