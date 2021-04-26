@@ -103,5 +103,8 @@ question_dt <- as.data.frame(question_dt)
 write.csv(question_dt, "question_list.csv", row.names = FALSE)
 #drive_upload("question_list.csv", path = as_dribble("REMS_SALG/")) # for initial upload
 # FILE ID for question_list: 1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc
+# REMINDER: Use drive_upload for first file save, then use drive_update to allow file to be over-written, otherwise multiple files with the same name but different time stamp are created
+# i.e., IF THIS IS THE FIRST TIME RUNNING THROUGH THE PROGRAM, NEED TO RUN drive_upload and update the ID number specified in drive_update
+# After first run-through, comment out drive_upload and run as drive_update
 drive_update(file = as_id("1ncufvuw3zCHRPiLX6ykdLKv498JD01poJIKjljQjYAc"), media = "question_list.csv")
 file.remove("question_list.csv")

@@ -13,7 +13,7 @@ library(semTools)
 library(tidyverse)
 
 # Restarting point
-load("2021-02-13_all-data-prior-to-CFA_pooled-vars-removed.RData") 
+load("2021-04-25_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
 # REMINDER: dropping pooled variables because when analyzing these as ORDINAL variables, categories must be present in both the pre and post groups
 # Pooled variables range from 1 to 6 in increments of 0.5 because responses were averaged
 # Example: compare tidy_dat_all %>% filter(test == "pre") %>% select(understanding_sound_pooled) %>% table() versus

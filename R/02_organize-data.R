@@ -242,6 +242,7 @@ coded_and_standardized_dat %>%
   filter(str_detect(coded_and_standardized_dat$concept, "split")) %>%
   select(concept) %>% unique()
 
+# Correlation and boxplots of pooled vs split no longer relevant since these questions get dropped from analysis
 # Only need to plot once:
 # concept_patterns <- c("skills_communicate", "understanding_oceanacid", "understanding_society", "understanding_sound")
 # split_concept_patterns <- paste(concept_patterns, "_split", sep = "")
@@ -259,9 +260,9 @@ coded_and_standardized_dat %>%
 #   ggsave(box_png, width = 8, height = 8)
 #   drive_upload(box_png, path = as_dribble("REMS_SALG/Results/Supplementary Information"))
 #   file.remove(box_png)
-#   
-#   plot_dat <- coded_and_standardized_dat %>% 
-#     filter(str_detect(coded_and_standardized_dat$concept, split_concept_patterns[i])) %>% 
+# 
+#   plot_dat <- coded_and_standardized_dat %>%
+#     filter(str_detect(coded_and_standardized_dat$concept, split_concept_patterns[i])) %>%
 #     pivot_wider(id_cols = c(Number, year, test), names_from = concept, values_from = answer)
 #   p <- ggplot(data = plot_dat,
 #               mapping = aes(x = !!as.symbol(names(plot_dat)[4]), y = !!as.symbol(names(plot_dat)[5]))) +
@@ -269,8 +270,8 @@ coded_and_standardized_dat %>%
 #     geom_smooth(method = lm, fullrange = TRUE) +
 #     coord_cartesian(xlim = c(0.5, 6.5), ylim = c(0.5, 6.5)) +
 #     geom_abline(slope = 1, intercept = 0) +
-#     annotate(x=1.5, y=6, 
-#              label=paste("r^2 = ", round(cor(plot_dat[[4]], plot_dat[[5]], use = "complete.obs"), 2)), 
+#     annotate(x=1.5, y=6,
+#              label=paste("r^2 = ", round(cor(plot_dat[[4]], plot_dat[[5]], use = "complete.obs"), 2)),
 #              geom="text", size=5)
 #   plot(p)
 #   rm(p)
@@ -340,8 +341,8 @@ coded_and_standardized_dat <- coded_and_standardized_dat %>%
 
 write.csv(coded_and_standardized_dat, "coded_and_standardized_dat.csv", row.names = FALSE)
 #drive_upload("coded_and_standardized_dat.csv", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for coded_dat: 1NfWblXuSW_gwPqfteP9tzxe5A96kI94uuJb-7PGyCcE
-drive_update(file = as_id("1NfWblXuSW_gwPqfteP9tzxe5A96kI94uuJb-7PGyCcE"), media = "coded_and_standardized_dat.csv")
+# FILE ID for coded_dat: 
+drive_update(file = as_id("1Su2siLc0-90nsZ0Uh2gBnw1GqU0nGx8tlYbzHlwhBiE"), media = "coded_and_standardized_dat.csv")
 file.remove("coded_and_standardized_dat.csv")
 
   
