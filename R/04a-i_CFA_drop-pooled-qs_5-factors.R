@@ -23,6 +23,9 @@ load("2021-04-25_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs
 # Old dataset where pooled variables are retained
 # load("2021-02-13_all-data-prior-to-CFA_all-vars.RData") 
 
+# LEFT OFF HERE: Do a CFA on just the post data to make sure data was not being overfit (see 04_CFA.R for sample code)
+
+
 ######################################################################################################
 # MEASUREMENT INVARIANCE ANALYSIS OF ORDINAL VARIABLES following Svetina et al. 2019
 

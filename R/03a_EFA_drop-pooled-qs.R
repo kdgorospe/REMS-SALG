@@ -234,7 +234,8 @@ for (i in time_point){
 
 ###################################################################################################################
 # FACTOR ANALYSIS
-# Uses nfactors 4, 5, 6
+# Uses nfactors 2, 3, 4, 5, 6
+# REMINDER: 2 and 3 factors justified based on criteria that eigenvalues be greater than 1; while 4, 5, and 6 factors justified based on parallel analysis
 # Note: script produces results for pre and post data, but only the pre results are uploaded to Google Drive since this is the only one we care about for EFA
 
 # set nfactors to results from Scree plot
@@ -248,7 +249,7 @@ for (i in time_point){
   cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
   cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
   
-  for (f in c(4, 5, 6)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
+  for (f in c(2, 3, 4, 5, 6)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
     EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
     
     # Write model outputs to textfile
@@ -268,10 +269,18 @@ for (i in time_point){
     EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
     write.csv(EFA_loadings_only, file = efa_loadings_csv)
     
-    #drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    #drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
     
     # Use drive_update to update specific file based on ID number
+    if (i == "pre" & f == 2){
+      drive_update(file = as_id("1uUMMohrDSZYM7dpStt9BsK5hqki-ji4j"), media = efa_file) 
+      drive_update(file = as_id("1Yt6xAL3of-4eyc3Jbktw3UmeVtpGD3le"), media = efa_loadings_csv) 
+    }
+    if (i == "pre" & f == 3){
+      drive_update(file = as_id("1ltZRlVNlqstdGRKsP7pp-uCfC1_4Z3h0"), media = efa_file) 
+      drive_update(file = as_id("1GaEDumNNZlZisTYNdKG7MrL5TNE6dA62"), media = efa_loadings_csv) 
+    }
     if (i == "pre" & f == 4){
       drive_update(file = as_id("1KCCgbNkpPif0uQI9UaACEwO6c_KuvmXz"), media = efa_file) 
       drive_update(file = as_id("1HwYbj61Fh5WT8BdzVGekQJkhnthfUC81"), media = efa_loadings_csv) 
