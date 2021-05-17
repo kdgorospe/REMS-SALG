@@ -16,18 +16,22 @@ library(GPArotation) # needed for promax rotation in fa function
 # FINAL CLEANING: do this up top, so that all correlation plots, etc are for the FINAL dataset
 # Arrange data into tidy format (each row is a single student)
 tidy_dat_all <- coded_and_standardized_dat %>%
-  # drop all NAs (this should remove all questions about college major)
-  drop_na(pooled_answer) %>%
-  select(Number, answer = pooled_answer, year, test, concept) %>% # Rename pooled_answer to just "answer"
+  select(Number, answer, year, test, concept) %>% # Rename pooled_answer to just "answer"
   pivot_wider(values_from = answer, names_from = concept, id_cols = c(Number, year, test)) %>% # use values_fn = list(val = length) to identify coding duplicates %>%
+  # REMOVE QUESTIONS ABOUT COLLEGE MAJOR (yes no)
+  select(!starts_with("major")) %>%
   # REMOVE ALL EVALUATION QUESTIONS (only asked in the post test, and not part of our pre vs post framework)
   select(!starts_with("evaluation")) %>% # note: for some reason starts_with("evaluation") == FALSE does not work (not tidy?)
   # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
   select(-c(understanding_ethology, understanding_aquaculture, understanding_coralclimate, understanding_coralskel, understanding_diversity)) %>%
-  # drop all questions that were split, then pooled in later years (reminder: keeping the pooled questions presents problems when analyzing as ORDINAL variables)
-  select(-c(skills_communicate_pooled, understanding_oceanacid_pooled, understanding_society_pooled, understanding_sound_pooled)) %>%
+  # KEEP QUESTIONS THAT WERE POOLED IN EARLIER YEARS BUT DROP THEIR UPDATED SPLIT VERSIONS (REMINDER: taking the mean of split questions to standardize them with pooled questions creates problems with ordinal variable analysis)
+  # REMINDER: DO THIS INSTEAD OF REVERSE OPTION (keeping split but dropping pooled questions in order to retain a larger dataset 2013-2016)
+  select(!contains("split")) %>%
   arrange(year, test, Number) %>%
   ungroup() 
+
+# %>% drop_na()
+# REMINDER: not always necessary to drop NAs, although sometimes this can help with the function fa.parallel if it produces error message about "Matrix not positive definite"
 
 # Create subsets of pre and post datasets - filter both subsets to the same questions, so they are comparable
 tidy_dat_pre <- tidy_dat_all %>%
@@ -86,18 +90,18 @@ for (i in time_point){
   #drive_upload(cor_pdf_x_insig, path = as_dribble("REMS_SALG/Results")) # for initial upload
   
   if (i=="pre"){ 
-    drive_update(file = as_id("14xD9rjNBqHMs4YCrScgJkHOXBqjRKNq3"), media = cor_csv)
-    drive_update(file = as_id("1H8S93QVwckWcdoZgswte8HIMGqXGQgjo"), media = hist_pdf)
-    drive_update(file = as_id("1wcTlCgRiw6Cr2AInM7J9MBcjU_nWde1z"), media = p_csv)
-    drive_update(file = as_id("1ldH4cd7FLuJCNPYpBty-lusqiSlZvXPi"), media = cor_pdf_plain)
-    drive_update(file = as_id("1F273l84K8ZBzsrHioL-jDEtmO_BVAxcT"), media = cor_pdf_x_insig)
+    drive_update(file = as_id("1QTraXW5kVmA21OCRXG3Wbvofn5YpWApj"), media = cor_csv)
+    drive_update(file = as_id("1H8_u-peEG-BkA76pb3yx6byL8jYfCE0b"), media = hist_pdf)
+    drive_update(file = as_id("1RGu2vJ1temEU-4hw8FkVXG3zQ3Z8gkHh"), media = p_csv)
+    drive_update(file = as_id("1SwSN1Km3cI3WXvCQkcUpxqt78xuaYjDR"), media = cor_pdf_plain)
+    drive_update(file = as_id("1oMIrFnRPLQWOT3ME1kClzKWKjhq40mET"), media = cor_pdf_x_insig)
   }
   if (i=="post"){ 
-    drive_update(file = as_id("1nFd4Drs6sZd3hQ_Gq9IWWjDec3cvLRo0"), media = cor_csv)
-    drive_update(file = as_id("1iZroyQvuEnhJEMYfrZLWCDfsyJBC6EhK"), media = hist_pdf)
-    drive_update(file = as_id("1eR4_lunZCUREmhDKboBSUjeIOTQn0BGh"), media = p_csv)
-    drive_update(file = as_id("1f4gDObM6sPIB3ZfMN-3QZexIAl-f3Kq7"), media = cor_pdf_plain)
-    drive_update(file = as_id("1z0d3A-XPbpulp6enqqasw2E8FQy8RAmd"), media = cor_pdf_x_insig)
+    drive_update(file = as_id("1wTLYkHGLDhU1Jko5zbFiJhfcFAGjn5C4"), media = cor_csv)
+    drive_update(file = as_id("1f9J00UYwWi7zBqbnGMrZ8j1roPpLR7ZX"), media = hist_pdf)
+    drive_update(file = as_id("1F0orgiFbezqXzgHj1mXeCaei6b7bfoBW"), media = p_csv)
+    drive_update(file = as_id("1woZc88uS_rzfPquaJhus3cbvEAYdLWft"), media = cor_pdf_plain)
+    drive_update(file = as_id("1J7SRGrd3MigjCrTl5T6R_UsAV6MjbnvQ"), media = cor_pdf_x_insig)
   }
   file.remove(cor_csv)
   file.remove(cor_pdf_plain)
@@ -138,10 +142,10 @@ for (i in time_point){
   write.csv(dat_describe, describe_csv, row.names = TRUE) # write out row.names because these list the different "questions"
   #drive_upload(describe_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
   if (i == "pre"){
-    drive_update(file = as_id("14rh2-PdtmDwuVKQzEcNlNe0zKLpjOQ_L"), media = describe_csv)
+    drive_update(file = as_id("18vGN8gCa_zap2qp03ByXcZf8vBAvOlm8"), media = describe_csv)
   }
   if (i == "post"){
-    drive_update(file = as_id("1ccP2KC3K_rrs0b4GYOUTP5cHllb5P3RF"), media = describe_csv)
+    drive_update(file = as_id("1ZBc7TImPK3ONsi8UzVLKIxi5GFzw6i4y"), media = describe_csv)
   }
   file.remove(describe_csv)
 }
@@ -151,6 +155,10 @@ for (i in time_point){
 # Finalize variable list for further analysis:
 tidy_dat_pre_final <- tidy_dat_pre # In case any further filtering needed
 tidy_dat_post_final <- tidy_dat_post # In case any further filtering needed
+
+###################################################################################################################
+# NOTE FOR REMAINDER OF CODE BELOW - only producing outputs for "PRE" data since this is all that matters for EFA
+# POST data re-enters in the measurement invariance analysis framework
 
 # Additional EFA data inspection tests:
 
@@ -171,7 +179,7 @@ sink()
 
 #drive_upload(bartlett_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
 # Use drive_update to update specific file based on ID number
-drive_update(file = as_id("15Lt6GE_GMQMO_CBqhVndawWrIxm-4Zfr"), media = bartlett_name)  
+drive_update(file = as_id("1eQUmLav1aT9oVCVrVLGW1BYR4wtm4z9I"), media = bartlett_name)  
 file.remove(bartlett_name)
 
 # 2 - Kaiser, Meyer, Olkin measure of Sampling Adequacy
@@ -187,122 +195,110 @@ print(KMO(r = pre_cor_matrix))
 sink()
 
 #drive_upload(KMO_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
-drive_update(file = as_id("1zZrJnhstOanMublbRdU7CucNURGi2INK"), media = KMO_name)  
+drive_update(file = as_id("1Jj9woQItbTi9tCek5dah1p8QJdlsUWkc"), media = KMO_name)  
 file.remove(KMO_name)
 
 ###################################################################################################################
 # SCREE PLOTS 
-# RESULT: use 5 factors for PRE data; use 2 factors for POST data
-# Although code below does this for PRE and POST, only interested in PRE since this is what's used for the EFA
 
 # NOTES on SCREE PLOTS: (from Howard 2016)
 # plots each eigenvalue on a graph and determine when decreases in successive eigenvalues start to asymptote
 # only include the number of factors up until the asymptote; these represent common variance better than the factors after the asymptote
 
-time_point <- c("pre", "post")
-for (i in time_point){
-  
-  tidy_dat <- get(paste("tidy_dat_", i, "_final", sep=""))
-  
-  dat_scaled <- scale(tidy_dat[,4:dim(tidy_dat)[2]], center=TRUE, scale=TRUE)
-  
-  # SCREE PLOT TO DETERMINE THE NUMBER OF FACTORS IN THE DATA
-  # FIX IT - in addition to scree plot, do parallel analysis?
-  # See: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
-  cor_matrix <- cor(dat_scaled, use = "pairwise.complete.obs")
-  
-  # Print to console:
-  cat("For", i, "data:\n")
-  
-  scree_name <- paste("screeplot_", i, "_final.pdf", sep = "")
-  pdf(file = scree_name)
-  fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
-  dev.off()
-  #drive_upload(scree_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+i <- "pre"
+tidy_dat <- get(paste("tidy_dat_", i, "_final", sep=""))
+dat_scaled <- scale(tidy_dat[,4:dim(tidy_dat)[2]], center=TRUE, scale=TRUE)
 
-  #Use drive_update to update specific file based on ID number
-  if (i == "pre"){
-    drive_update(file = as_id("14EXw5PQJHLfAlwKRQTmQ90Ss-wj-GvbP"), media = scree_name)
-  }
-  if (i == "post"){
-    drive_update(file = as_id("1vI2xKnoYHSLvO728aJFo-LF7P5d-L8AA"), media = scree_name)
-  }
-  
-  file.remove(scree_name)
-  
-}
+# SCREE PLOT TO DETERMINE THE NUMBER OF FACTORS IN THE DATA
+# FIX IT - in addition to scree plot, do parallel analysis?
+# See: https://quantdev.ssri.psu.edu/tutorials/intro-basic-exploratory-factor-analysis
+cor_matrix <- cor(dat_scaled, use = "pairwise.complete.obs")
+
+scree_name <- paste("screeplot_", i, "_final.pdf", sep = "")
+pdf(file = scree_name)
+fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
+dev.off()
+#drive_upload(scree_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+
+#Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1oKB5XRv2QxeeGJbzJkNM2FfYS6wD2Pj4"), media = scree_name)
+file.remove(scree_name)
 
 ###################################################################################################################
 # FACTOR ANALYSIS
-# Uses nfactors 2, 3, 4, 5, 6
-# REMINDER: 2 and 3 factors justified based on criteria that eigenvalues be greater than 1; while 4, 5, and 6 factors justified based on parallel analysis
+# Uses nfactors 2 through 7
+# REMINDER: 2 and 3 factors justified based on criteria that eigenvalues be greater than 1;
+# 5, 6, and 7 factors justified based on parallel analysis (+/- 1 from asymptote); 
+# 4 factors justified just to be continuous between 2 and 7
 # Note: script produces results for pre and post data, but only the pre results are uploaded to Google Drive since this is the only one we care about for EFA
 
 # set nfactors to results from Scree plot
 # rotate = "promax" what Goodwin 2016 used:
 # A promax (non-orthogonal or oblique) rotation was employed since the theory naturally permits inter-correlation between the constructs (i.e., the factors were not expected to be orthogonal)
 
-time_point <- c("pre", "post")
-for (i in time_point){
+
+i <- "pre"
+
+tidy_dat <- get(paste("tidy_dat_", i, "_final", sep=""))
+cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
+cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
+
+for (f in c(2, 3, 4, 5, 6, 7)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
+  EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
   
-  tidy_dat <- get(paste("tidy_dat_", i, "_final", sep=""))
-  cor_dat <- tidy_dat[,4:dim(tidy_dat)[2]]
-  cor_matrix <- cor(cor_dat, use="pairwise.complete.obs")
+  # Write model outputs to textfile
+  efa_file <- paste("EFA_", i, "_final_", f, "factors.txt", sep = "")
+  sink(efa_file)
+  print(EFA_results)
+  sink()
   
-  for (f in c(2, 3, 4, 5, 6)){ # Set numbers of factors here; IMPORTANT: if decide to change number of factors here, remember conditionals for drive_update below
-    EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
-    
-    # Write model outputs to textfile
-    efa_file <- paste("EFA_", i, "_final_", f, "factors.txt", sep = "")
-    sink(efa_file)
-    print(EFA_results)
-    sink()
-    
-    # Simplify model outputs: Write just factor loadings to textfile:
-    #efa_loadings_file <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.txt", sep = "")
-    #sink(efa_loadings_file)
-    #print(EFA_results$loadings)
-    #sink()
-    
-    # Simplify model outputs: Write factor loadings to csv file
-    efa_loadings_csv <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.csv", sep = "")
-    EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
-    write.csv(EFA_loadings_only, file = efa_loadings_csv)
-    
-    drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    
-    # Use drive_update to update specific file based on ID number
-    if (i == "pre" & f == 2){
-      drive_update(file = as_id("1uUMMohrDSZYM7dpStt9BsK5hqki-ji4j"), media = efa_file) 
-      drive_update(file = as_id("1Yt6xAL3of-4eyc3Jbktw3UmeVtpGD3le"), media = efa_loadings_csv) 
-    }
-    if (i == "pre" & f == 3){
-      drive_update(file = as_id("1ltZRlVNlqstdGRKsP7pp-uCfC1_4Z3h0"), media = efa_file) 
-      drive_update(file = as_id("1GaEDumNNZlZisTYNdKG7MrL5TNE6dA62"), media = efa_loadings_csv) 
-    }
-    if (i == "pre" & f == 4){
-      drive_update(file = as_id("1KCCgbNkpPif0uQI9UaACEwO6c_KuvmXz"), media = efa_file) 
-      drive_update(file = as_id("1HwYbj61Fh5WT8BdzVGekQJkhnthfUC81"), media = efa_loadings_csv) 
-    }
-    if (i == "pre" & f == 5){
-      drive_update(file = as_id("19t9hzAXh3qVGanljrR4dD13xSKy9s7il"), media = efa_file)
-      drive_update(file = as_id("1wq9RmlLf15_UXmWc2Gtne2vLJ6jy1iKk"), media = efa_loadings_csv)
-    }
-    if (i == "pre" & f == 6){
-      drive_update(file = as_id("1xsQExVXyu4hQTdaT3VRTOJW5IB0kP6XI"), media = efa_file)
-      drive_update(file = as_id("1irwJPnzgO7PeUQ9uLzeAJBKy8Otr2HMd"), media = efa_loadings_csv)
-    }
-    
-    file.remove(efa_file)
-    file.remove(efa_loadings_csv)
-    
-  } # END loop through different number of factors
+  # Simplify model outputs: Write just factor loadings to textfile:
+  #efa_loadings_file <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.txt", sep = "")
+  #sink(efa_loadings_file)
+  #print(EFA_results$loadings)
+  #sink()
   
-} # END loop through pre and post
+  # Simplify model outputs: Write factor loadings to csv file
+  efa_loadings_csv <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.csv", sep = "")
+  EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
+  write.csv(EFA_loadings_only, file = efa_loadings_csv)
+  
+  # drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+  # drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
+
+  # Use drive_update to update specific file based on ID number
+  if (i == "pre" & f == 2){
+    drive_update(file = as_id("1YXI7s9T3olgkv3nymjNsN47P3dRCUGvY"), media = efa_file) 
+    drive_update(file = as_id("1wutgzL8mwRoTPsv7GM7krDo_2FH1cR8R"), media = efa_loadings_csv) 
+  }
+  if (i == "pre" & f == 3){
+    drive_update(file = as_id("1o9FtH6y-_ucvj0oNYNOUbGeFsYoW40go"), media = efa_file) 
+    drive_update(file = as_id("12aIP5keFmrVMb4kA7i_6gG4qBDzKLrMi"), media = efa_loadings_csv) 
+  }
+  if (i == "pre" & f == 4){
+    drive_update(file = as_id("1aB2uKgPzS2T3Z2NuPCUlKCfm7sNkgheW"), media = efa_file) 
+    drive_update(file = as_id("1WliV4Uk-Aqlu4Xab048Ps99_z34JlYUv"), media = efa_loadings_csv) 
+  }
+  if (i == "pre" & f == 5){
+    drive_update(file = as_id("1h--Ww-ggyyrimIquLUKlnSVtMeMLVkJ0"), media = efa_file)
+    drive_update(file = as_id("1odDoPMoVAbJ9jDbgJzyTlQvUUtwuJOoF"), media = efa_loadings_csv)
+  }
+  if (i == "pre" & f == 6){
+    drive_update(file = as_id("1_uyiQU92RN5EIauNZHBV96u4Qf3COrxw"), media = efa_file)
+    drive_update(file = as_id("1gP2u7d-HS4lYENgtTMTOzC5FALff5BMJ"), media = efa_loadings_csv)
+  }
+  if (i == "pre" & f == 7){
+    drive_update(file = as_id("1RP0ZQoVGWQe-Ay-kg3qibBwIMHfZgDBy"), media = efa_file)
+    drive_update(file = as_id("1t0QwnTW3M9zosGu7T9FkKqUJcAAEXFEb"), media = efa_loadings_csv)
+  }
+  
+  file.remove(efa_file)
+  file.remove(efa_loadings_csv)
+} # END loop through different number of factors
+
 
 # CHANGE DESCRIPTION AS NECESSARY:
-insert_description <- "pooled-qs-removed_likert-standardized_NAs-dropped"
+insert_description <- "split-qs-removed_likert-standardized_NAs-dropped"
 rdata_file <- paste(Sys.Date(), "_all-data-prior-to-CFA_", insert_description, ".RData", sep = "")
 save.image(file = rdata_file)
 # Upload to Google Drive manually (drive_upload for .RData file causes RStudio to crash)

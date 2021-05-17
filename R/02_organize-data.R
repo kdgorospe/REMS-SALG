@@ -228,19 +228,24 @@ coded_and_standardized_dat %>%
 coded_and_standardized_dat %>%
   filter(answer == 9)
 
+write.csv(coded_and_standardized_dat, "coded_and_standardized_dat.csv", row.names = FALSE)
+#drive_upload("coded_and_standardized_dat.csv", path = as_dribble("REMS_SALG/")) # for initial upload
+# FILE ID for coded_dat: 
+drive_update(file = as_id("1-AUf5ojqAEHQ5RSDitKVYAOo29xJDdx4"), media = "coded_and_standardized_dat.csv")
+file.remove("coded_and_standardized_dat.csv")
 
-
+# CODE BELOW NOT NECESSARY IF LIMITING ANALYSIS TO 2017-2018 (i.e., when pooled questions become split)
 # 2 - DEAL WITH inconsistent questions:
 # SPLIT vs POOLED questions: In some years, the question wording is: "Communicate the results of a research project in written and/or oral format skills" (POOLED) 
 # while in other years the wording is split: "Communicate the results of a research project in written format" and "Communicate the results of a research project in oral format"
 
 # View pooled vs split data:
-coded_and_standardized_dat %>%
-  filter(str_detect(coded_and_standardized_dat$concept, "pooled")) %>%
-  select(concept) %>% unique()
-coded_and_standardized_dat %>%
-  filter(str_detect(coded_and_standardized_dat$concept, "split")) %>%
-  select(concept) %>% unique()
+# coded_and_standardized_dat %>%
+#   filter(str_detect(coded_and_standardized_dat$concept, "pooled")) %>%
+#   select(concept) %>% unique()
+# coded_and_standardized_dat %>%
+#   filter(str_detect(coded_and_standardized_dat$concept, "split")) %>%
+#   select(concept) %>% unique()
 
 # Correlation and boxplots of pooled vs split no longer relevant since these questions get dropped from analysis
 # Only need to plot once:
@@ -285,17 +290,17 @@ coded_and_standardized_dat %>%
 # Mutate the column "concept" so that corresponding "split" questions have the same label, allowing them to be grouped together, and for their answers to be averaged
 # i.e., mutate "skills_communicate_split_written" and "skills_communicate_split_oral" to "skills_communicate_split"
 
-coded_and_standardized_dat <- coded_and_standardized_dat %>%
-  mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="(split_.*)", replacement = "split"),
-                             TRUE ~ concept)) %>%
-  group_by(Number, year, test, concept) %>%
-  summarize(pooled_answer = mean(answer), n_question = n()) %>%
-  ungroup()
-
-# Now that answers have been pooled, mutate column "concept" so that "split" questions now say "pooled" (indicating that they can be analyzed together downstream)
-coded_and_standardized_dat <- coded_and_standardized_dat %>%
-  mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="split", replacement = "pooled"),
-                             TRUE ~ concept))
+# coded_and_standardized_dat <- coded_and_standardized_dat %>%
+#   mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="(split_.*)", replacement = "split"),
+#                              TRUE ~ concept)) %>%
+#   group_by(Number, year, test, concept) %>%
+#   summarize(pooled_answer = mean(answer), n_question = n()) %>%
+#   ungroup()
+# 
+# # Now that answers have been pooled, mutate column "concept" so that "split" questions now say "pooled" (indicating that they can be analyzed together downstream)
+# coded_and_standardized_dat <- coded_and_standardized_dat %>%
+#   mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="split", replacement = "pooled"),
+#                              TRUE ~ concept))
 
 # FOLLOWING SECTIONS NO LONGER RELEVANT TO ANALYSIS (all questions about college major replaced with NAs above)
 # 3 - Switch answers for Yes=1/No=2 to Yes=2/No=1 for all questions: Are you interested in majoring in Marine Science? Not science? Science? Undecided? Unsure about College?
@@ -337,12 +342,5 @@ coded_and_standardized_dat <- coded_and_standardized_dat %>%
 #   filter(concept != "major_multiplechoice") %>%
 #   rbind(multichoice_to_yesno) %>%
 #   arrange(concept, test, year, Number)
-
-
-write.csv(coded_and_standardized_dat, "coded_and_standardized_dat.csv", row.names = FALSE)
-#drive_upload("coded_and_standardized_dat.csv", path = as_dribble("REMS_SALG/")) # for initial upload
-# FILE ID for coded_dat: 
-drive_update(file = as_id("1Su2siLc0-90nsZ0Uh2gBnw1GqU0nGx8tlYbzHlwhBiE"), media = "coded_and_standardized_dat.csv")
-file.remove("coded_and_standardized_dat.csv")
 
   
