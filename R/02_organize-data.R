@@ -234,7 +234,7 @@ write.csv(coded_and_standardized_dat, "coded_and_standardized_dat.csv", row.name
 drive_update(file = as_id("1-AUf5ojqAEHQ5RSDitKVYAOo29xJDdx4"), media = "coded_and_standardized_dat.csv")
 file.remove("coded_and_standardized_dat.csv")
 
-# CODE BELOW NOT NECESSARY IF LIMITING ANALYSIS TO 2017-2018 (i.e., when pooled questions become split)
+# CODE BELOW NO LONGER NECESSARY - no longer trying to harmonize pooled vs split questions
 # 2 - DEAL WITH inconsistent questions:
 # SPLIT vs POOLED questions: In some years, the question wording is: "Communicate the results of a research project in written and/or oral format skills" (POOLED) 
 # while in other years the wording is split: "Communicate the results of a research project in written format" and "Communicate the results of a research project in oral format"
