@@ -1,6 +1,7 @@
 # Do preliminary analysis (correlation and scree plots) and exploratory factor analysis
 # kdgorospe@gmail.com
 
+### REMINDER: not purusing this analysis; decided it's incorrect to do an analysis on the pooled questions (i.e., drop the split questions) since these are asking two different things at once
 ### NOTE: Focus on EFA results on the pre-data, plan is to use this as the "confirmed" model
 ### Then use CFA on the pre and post in a factorial invariance framework to test for changes between the two time points
 ### Screeplot on the pre-data (after filtering out variables that fail normality test) suggests there are three latent factors
