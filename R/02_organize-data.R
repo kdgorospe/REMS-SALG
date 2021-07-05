@@ -204,6 +204,10 @@ file.remove("coded_dat.csv")
 # 2015 - Student POST 6.1-11, 7.1-2; Mentor PRE and POST 6.1-5
 # 2016 - Student POST 6.1-8, 7.1-2; Mentor PRE 6.1-7, Mentor POST 6.1-8, 7.1-2, 8.1-7
 # 2017/18 - Student PRE 2.1-3, Student POST 2.1-3, 7.1-6, 8.1-2; Mentor PRE 2.1-3, 7.1-7, Mentor POST 2.1-3, 7.1-6, 8.1-2, 9.1-7
+
+# In addition, remove iClicker ID numbers that correspond to mentors (only want to analyze students): only applies to year 2014
+pre_mentor <- c(25861, 23860, 51148)
+post_mentor <- c(54142, 14983, 38861)
 coded_and_standardized_dat <- coded_dat %>%
   mutate_all(~na_if(., 9)) %>%
   mutate(answer = as.numeric(answer)) %>%
@@ -218,7 +222,11 @@ coded_and_standardized_dat <- coded_dat %>%
   # Convert all questions about college major to NAs
   mutate(answer = if_else(str_detect(concept, "major"), true = NaN, false = answer)) %>%
   # After converting all questions about college major to NAs, NOW **ALL** "1"s are NAs
-  mutate_all(~na_if(., 1))
+  mutate_all(~na_if(., 1)) %>%
+  # Remove iClicker ID numbers that correspond to mentors (only want to analyze students): only applies to year 2014
+  filter((Number %in% pre_mentor & year == 2014 & test == "pre")==FALSE) %>%
+  filter((Number %in% post_mentor & year == 2014 & test == "post")==FALSE)
+  
 
 # Check: no more "1"s because they've all been conerted to NAs
 table(coded_and_standardized_dat$concept, coded_and_standardized_dat$answer)
