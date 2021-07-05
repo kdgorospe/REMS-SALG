@@ -16,16 +16,27 @@ library(GPArotation) # needed for promax rotation in fa function
 # FINAL CLEANING: do this up top, so that all correlation plots, etc are for the FINAL dataset
 # Arrange data into tidy format (each row is a single student)
 tidy_dat_all <- coded_and_standardized_dat %>%
-  # drop all NAs (this should remove all questions about college major)
-  drop_na(pooled_answer) %>%
-  select(Number, answer = pooled_answer, year, test, concept) %>% # Rename pooled_answer to just "answer"
+  select(Number, answer, year, test, concept) %>% # Rename pooled_answer to just "answer"
   pivot_wider(values_from = answer, names_from = concept, id_cols = c(Number, year, test)) %>% # use values_fn = list(val = length) to identify coding duplicates %>%
+  # REMOVE QUESTIONS ABOUT COLLEGE MAJOR (yes no)
+  select(!starts_with("major")) %>%
   # REMOVE ALL EVALUATION QUESTIONS (only asked in the post test, and not part of our pre vs post framework)
   select(!starts_with("evaluation")) %>% # note: for some reason starts_with("evaluation") == FALSE does not work (not tidy?)
   # REMOVE VARIABLES WITH LIMITED PAIRWISE COMPARISONS (these labs were run only a few times)
   select(-c(understanding_ethology, understanding_aquaculture, understanding_coralclimate, understanding_coralskel, understanding_diversity)) %>%
   # drop all questions that were pooled then split in later years (REMINDER: taking the mean of split questions to standardize them with pooled questions creates problems with ordinal variable analysis)
-  select(-c(skills_communicate_pooled, understanding_oceanacid_pooled, understanding_society_pooled, understanding_sound_pooled)) %>%
+  select(-c(skills_communicate_pooled,
+            skills_communicate_split_oral,
+            skills_communicate_split_written,
+            understanding_oceanacid_pooled,
+            understanding_oceanacid_split_chemistry,
+            understanding_oceanacid_split_organisms,
+            understanding_society_pooled,
+            understanding_society_split_realissues,
+            understanding_society_split_society,
+            understanding_sound_pooled,
+            understanding_sound_split_general,
+            understanding_sound_split_organisms)) %>%
   arrange(year, test, Number) %>%
   ungroup() 
 
@@ -50,7 +61,7 @@ for (i in time_point){
   #drive_upload(cor_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
   
   # Plot histograms of responses:
-  p <- ggplot(pivot_longer(cor_dat, cols = names(cor_dat)[1]:names(cor_dat)[ncol(cor_dat)]), aes(x = value)) +
+  p <- ggplot(pivot_longer(cor_dat, cols = names(cor_dat)[1]:names(cor_dat)[ncol(cor_dat)]) %>% filter(is.na(value)==FALSE), aes(x = value)) +
     geom_histogram() +
     facet_wrap(.~name, ncol = 4)
   hist_pdf <- paste("histogram_", i, "_responses.pdf", sep="")
@@ -156,8 +167,6 @@ tidy_dat_post_final <- tidy_dat_post # In case any further filtering needed
 
 # 1 - Bartlett's test of sphericity - tests whether observed correlation matrix is an identity matrix;
 # Tests whether or not the correlation matrix exhibits any relationships or if has a complete lack of relationships (i.e., the identity matrix)
-# Just perform this on the pre data since that's what's being used in the EFA
-
 pre_cor_matrix <- cor(tidy_dat_pre_final[,-c(1:3)], use="pairwise.complete.obs")
 
 # RESULTS: Test shows results are significantly different from the identity matrix
@@ -174,6 +183,23 @@ sink()
 drive_update(file = as_id("15Lt6GE_GMQMO_CBqhVndawWrIxm-4Zfr"), media = bartlett_name)  
 file.remove(bartlett_name)
 
+# Repeat Bartlett's test on post data:
+post_cor_matrix <- cor(tidy_dat_post_final[,-c(1:3)], use="pairwise.complete.obs")
+
+# RESULTS: Test shows results are significantly different from the identity matrix
+cortest.bartlett(R = post_cor_matrix, n = nrow(tidy_dat_post_final), diag = TRUE) 
+
+# SAVE RESULTS:
+bartlett_name <- "post_cor_matrix_Bartlett's_test.txt"
+sink(bartlett_name)
+print(cortest.bartlett(R = post_cor_matrix, n = nrow(tidy_dat_post_final), diag = TRUE))
+sink()
+
+# drive_upload(bartlett_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1S5pT0BAw4P9fpzsur4pmp2qadGbI7rxI"), media = bartlett_name)  
+file.remove(bartlett_name)
+
 # 2 - Kaiser, Meyer, Olkin measure of Sampling Adequacy
 
 KMO(r = pre_cor_matrix)
@@ -188,6 +214,21 @@ sink()
 
 #drive_upload(KMO_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
 drive_update(file = as_id("1zZrJnhstOanMublbRdU7CucNURGi2INK"), media = KMO_name)  
+file.remove(KMO_name)
+
+# REPEAT on post data:
+KMO(r = post_cor_matrix)
+# RESULS: Test shows all variables are above cutoff of 0.6
+# This indicates that common variance (and thus latent factors) are present in the data
+
+# SAVE RESULTS:
+KMO_name <- "post_cor_matrix_KMO_test.txt"
+sink(KMO_name)
+print(KMO(r = post_cor_matrix))
+sink()
+
+# drive_upload(KMO_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+drive_update(file = as_id("1ZufOACxI-7PSp1gdtvH0LjHip2oeHt15"), media = KMO_name)  
 file.remove(KMO_name)
 
 ###################################################################################################################
