@@ -64,7 +64,7 @@ for (i in time_point){
   p <- ggplot(pivot_longer(cor_dat, cols = names(cor_dat)[1]:names(cor_dat)[ncol(cor_dat)]) %>% filter(is.na(value)==FALSE), aes(x = value)) +
     geom_histogram() +
     facet_wrap(.~name, ncol = 4)
-  hist_pdf <- paste("histogram_", i, "_responses.pdf", sep="")
+  hist_pdf <- paste("histogram_", i, ".pdf", sep="")
   pdf(hist_pdf)
   print(p)
   dev.off()
@@ -82,13 +82,13 @@ for (i in time_point){
   write.csv(p_95$p, p_csv, row.names = TRUE)
   #drive_upload(p_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
   
-  cor_pdf_plain <- paste("corrplot_", i, "_plain.pdf", sep="")
+  cor_pdf_plain <- paste("corrplot_plain_", i, ".pdf", sep="")
   pdf(cor_pdf_plain)
   corrplot(cor_matrix, tl.col="black", tl.cex=0.75) # insig = "label_sig" means label the significant p-values; otherwise option is to label the insignificant values 
   dev.off()
   #drive_upload(cor_pdf_plain, path = as_dribble("REMS_SALG/Results")) # for initial upload
   
-  cor_pdf_x_insig <- paste("corrplot_", i, "_x_insig.pdf", sep="")
+  cor_pdf_x_insig <- paste("corrplot_x_insig_", i, ".pdf", sep="")
   pdf(cor_pdf_x_insig)
   corrplot(cor_matrix, p.mat = p_95$p, sig.level = 0.05, tl.col = "black", tl.cex = 0.75, insig = "blank")
   dev.off()
@@ -173,7 +173,7 @@ pre_cor_matrix <- cor(tidy_dat_pre_final[,-c(1:3)], use="pairwise.complete.obs")
 cortest.bartlett(R = pre_cor_matrix, n = nrow(tidy_dat_pre_final), diag = TRUE) 
 
 # SAVE RESULTS:
-bartlett_name <- "pre_cor_matrix_Bartlett's_test.txt"
+bartlett_name <- "Bartlett's_test_pre.txt"
 sink(bartlett_name)
 print(cortest.bartlett(R = pre_cor_matrix, n = nrow(tidy_dat_pre_final), diag = TRUE))
 sink()
@@ -190,7 +190,7 @@ post_cor_matrix <- cor(tidy_dat_post_final[,-c(1:3)], use="pairwise.complete.obs
 cortest.bartlett(R = post_cor_matrix, n = nrow(tidy_dat_post_final), diag = TRUE) 
 
 # SAVE RESULTS:
-bartlett_name <- "post_cor_matrix_Bartlett's_test.txt"
+bartlett_name <- "Bartlett's_test_post.txt"
 sink(bartlett_name)
 print(cortest.bartlett(R = post_cor_matrix, n = nrow(tidy_dat_post_final), diag = TRUE))
 sink()
@@ -207,7 +207,7 @@ KMO(r = pre_cor_matrix)
 # This indicates that common variance (and thus latent factors) are present in the data
 
 # SAVE RESULTS:
-KMO_name <- "pre_cor_matrix_KMO_test.txt"
+KMO_name <- "KMO_test_pre.txt"
 sink(KMO_name)
 print(KMO(r = pre_cor_matrix))
 sink()
@@ -222,7 +222,7 @@ KMO(r = post_cor_matrix)
 # This indicates that common variance (and thus latent factors) are present in the data
 
 # SAVE RESULTS:
-KMO_name <- "post_cor_matrix_KMO_test.txt"
+KMO_name <- "KMO_test_post.txt"
 sink(KMO_name)
 print(KMO(r = post_cor_matrix))
 sink()
@@ -254,7 +254,7 @@ for (i in time_point){
   # Print to console:
   cat("For", i, "data:\n")
   
-  scree_name <- paste("screeplot_", i, "_final.pdf", sep = "")
+  scree_name <- paste("screeplot_", i, ".pdf", sep = "")
   pdf(file = scree_name)
   fa.parallel(x = cor_matrix, fm = "ml", fa = "fa", n.obs = nrow(dat_scaled)) # "ml" is the maximum likelihood method for "well-behaved" data
   dev.off()
@@ -293,7 +293,7 @@ for (i in time_point){
     EFA_results <- fa(r = cor_matrix, nfactors = f, rotate = "promax", fm = "ml") 
     
     # Write model outputs to textfile
-    efa_file <- paste("EFA_", i, "_final_", f, "factors.txt", sep = "")
+    efa_file <- paste("EFA_", f, "factors_", i, ".txt", sep = "")
     sink(efa_file)
     print(EFA_results)
     sink()
@@ -305,7 +305,7 @@ for (i in time_point){
     #sink()
     
     # Simplify model outputs: Write factor loadings to csv file
-    efa_loadings_csv <- paste("EFA_", i, "_final_", f, "factors_loadingsONLY.csv", sep = "")
+    efa_loadings_csv <- paste("EFA_", f, "factors_loadings_", i, ".csv", sep = "")
     EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
     write.csv(EFA_loadings_only, file = efa_loadings_csv)
     
