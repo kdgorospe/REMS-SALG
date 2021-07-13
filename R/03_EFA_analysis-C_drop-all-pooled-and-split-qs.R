@@ -234,7 +234,6 @@ file.remove(KMO_name)
 ###################################################################################################################
 # SCREE PLOTS 
 # RESULT: use 5 factors for PRE data; use 2 factors for POST data
-# Although code below does this for PRE and POST, only interested in PRE since this is what's used for the EFA
 
 # NOTES on SCREE PLOTS: (from Howard 2016)
 # plots each eigenvalue on a graph and determine when decreases in successive eigenvalues start to asymptote
@@ -310,29 +309,50 @@ for (i in time_point){
     EFA_loadings_only <- EFA_results$loadings[1:nrow(EFA_results$loadings), 1:ncol(EFA_results$loadings)]
     write.csv(EFA_loadings_only, file = efa_loadings_csv)
     
-    drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
-    
+    # drive_upload(efa_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+    # drive_upload(efa_loadings_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
+
     # Use drive_update to update specific file based on ID number
     if (i == "pre" & f == 2){
-      drive_update(file = as_id("1uUMMohrDSZYM7dpStt9BsK5hqki-ji4j"), media = efa_file) 
-      drive_update(file = as_id("1Yt6xAL3of-4eyc3Jbktw3UmeVtpGD3le"), media = efa_loadings_csv) 
+      drive_update(file = as_id("1r8GJaWzEIpu17YbxpnG8NooV3WxCan7s"), media = efa_file) 
+      drive_update(file = as_id("1ohYtpB0FJ7yqV1YxXO4fShaq4Eg4xTCW"), media = efa_loadings_csv) 
     }
     if (i == "pre" & f == 3){
-      drive_update(file = as_id("1ltZRlVNlqstdGRKsP7pp-uCfC1_4Z3h0"), media = efa_file) 
-      drive_update(file = as_id("1GaEDumNNZlZisTYNdKG7MrL5TNE6dA62"), media = efa_loadings_csv) 
+      drive_update(file = as_id("1C8Yshu--XRqa78RX5qA7i4TPqREPMllc"), media = efa_file) 
+      drive_update(file = as_id("1vw4L5QeT-YyVhQLzXniTuJB_zf-Cny5j"), media = efa_loadings_csv) 
     }
     if (i == "pre" & f == 4){
-      drive_update(file = as_id("1KCCgbNkpPif0uQI9UaACEwO6c_KuvmXz"), media = efa_file) 
-      drive_update(file = as_id("1HwYbj61Fh5WT8BdzVGekQJkhnthfUC81"), media = efa_loadings_csv) 
+      drive_update(file = as_id("1AbA0epFMe575AhxvApZ_xkU5Hh7WD6ik"), media = efa_file) 
+      drive_update(file = as_id("1uVjjLA9KFL43P5Lcr6nKLPZCw4qJAGXQ"), media = efa_loadings_csv) 
     }
     if (i == "pre" & f == 5){
-      drive_update(file = as_id("19t9hzAXh3qVGanljrR4dD13xSKy9s7il"), media = efa_file)
-      drive_update(file = as_id("1wq9RmlLf15_UXmWc2Gtne2vLJ6jy1iKk"), media = efa_loadings_csv)
+      drive_update(file = as_id("1VlHJPqcJyv6eKBspjL9nDTiWWBpUeHN4"), media = efa_file)
+      drive_update(file = as_id("1jFOjuZ5wvF1Nh-1TyKTy2wEpzGssjh9W"), media = efa_loadings_csv)
     }
     if (i == "pre" & f == 6){
-      drive_update(file = as_id("1xsQExVXyu4hQTdaT3VRTOJW5IB0kP6XI"), media = efa_file)
-      drive_update(file = as_id("1irwJPnzgO7PeUQ9uLzeAJBKy8Otr2HMd"), media = efa_loadings_csv)
+      drive_update(file = as_id("1OznjkUMAaBKYPjmkIKgW_xSaSPJ7m9UD"), media = efa_file)
+      drive_update(file = as_id("1gfZ9QVFucVzQbejumzOreaSZp4leprKL"), media = efa_loadings_csv)
+    }
+    
+    if (i == "post" & f == 2){
+      drive_update(file = as_id("1O-rkcPO2r_5WW1i4PIWK_Jfu-7lhz_bm"), media = efa_file) 
+      drive_update(file = as_id("1itde8givq9R8adOqs7RKoP8v0ZRhJMLa"), media = efa_loadings_csv) 
+    }
+    if (i == "post" & f == 3){
+      drive_update(file = as_id("1AXZuqdgyTknX1PXysexBcVUgJr9BYzPm"), media = efa_file) 
+      drive_update(file = as_id("1HhDWs2fJbVdggmFEbL2Pq28wHie9IXxK"), media = efa_loadings_csv) 
+    }
+    if (i == "post" & f == 4){
+      drive_update(file = as_id("165hqfW5Xas3nUJIYcz1x9CFbQjmwomVR"), media = efa_file) 
+      drive_update(file = as_id("1S_wAXd0iWTE3-PjxdjEkz68n2FMw_xvA"), media = efa_loadings_csv) 
+    }
+    if (i == "post" & f == 5){
+      drive_update(file = as_id("1PE0AILn4n2dC9bWxajmfCaOl03mC0FyY"), media = efa_file)
+      drive_update(file = as_id("1GDUu0l37C-Y2kyO6JvESVVRtlCRGx-bV"), media = efa_loadings_csv)
+    }
+    if (i == "post" & f == 6){
+      drive_update(file = as_id("1wHwzTqiTe4Fn5QaUBiX-lWDjm7ooZb4Z"), media = efa_file)
+      drive_update(file = as_id("1ZAJHVuPPaQoqMYTKxuwzp4EdHPSYI8ai"), media = efa_loadings_csv)
     }
     
     file.remove(efa_file)
