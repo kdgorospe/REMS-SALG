@@ -11,6 +11,7 @@ library(lavaan)
 library(semPlot)
 library(semTools)
 library(tidyverse)
+library(googledrive)
 
 # Restarting point
 load("2021-07-13_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
@@ -34,8 +35,9 @@ identity =~ attitudes_career + attitudes_discussing + attitudes_enthusiastic + a
 confidence =~ attitudes_confidentunderstanding + understanding_ecology + understanding_fertilization
  '
 
-# FIX IT should this be parameterization = "delta" (same as measurement invariance?) or "theta"
+# Fit indices (results) are the same for paraeterization = "delta" (same setting as measurement invariance) or "theta"
 fit_3 <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = TRUE, parameterization = "delta")
+fit_3_theta <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = TRUE, parameterization = "theta")
 # std.lv = standardize latent variables
 # doing so constrains latent variables to have a mean of 0 and a variance of 1 (allows the latent covariances to be interpreted as CORRELATIONS)
 #summary(fit_3)
@@ -44,11 +46,21 @@ fit_3 <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = TRUE,
 # Create matrix for storing results (6 fit indices across three different models)
 post.results <- matrix(NA, nrow = 2, ncol = 6)
 colnames(post.results) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled")
-rownames(post.results) <- c("model4a", "model4b")
+rownames(post.results) <- c("model3_delta-parameter", "model3b_theta-parameter")
 post.results[1,] <- round(data.matrix(fitmeasures(fit_3, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
-post.results[2,] <- round(data.matrix(fitmeasures(fit_3, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+post.results[2,] <- round(data.matrix(fitmeasures(fit_3_theta, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
 post.results
+
+overfit_test_name <- "fit-indices_CFA-on-post-to-check-for-overfitting.txt"
+sink("fit-indices_CFA-on-post-to-check-for-overfitting.txt")
+print(post.results)
+sink()
+
+#drive_upload(overfit_test_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1atHiq9d-6sY1NtlFLZ_7htm5JJ7SXlqo"), media = overfit_test_name)  
+file.remove(overfit_test_name)
 # Interpreting model outputs, see: http://www.understandingdata.net/2017/03/22/cfa-in-lavaan/
 # CFI > 0.9 is an OK fit
 # TLI (more conservative than CFI because it penalizes complex models) > 0.9 is an OK fit
@@ -107,6 +119,8 @@ fit.baseline <- cfa(model.baseline, data = dat_collapse_responses, group = "test
 
 # Extract just the fit indices:
 all.results[1,] <- round(data.matrix(fitmeasures(fit.baseline, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+
+
 
 ######################################################################################################
 # THRESHOLD INVARIANCE MODEL (aka "Proposition 4" in Wu and Estabrook's 2016)
