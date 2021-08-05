@@ -52,8 +52,8 @@ post.results[2,] <- round(data.matrix(fitmeasures(fit_3_theta, fit.measures = c(
 
 post.results
 
-overfit_test_name <- "fit-indices_CFA-on-post-to-check-for-overfitting.txt"
-sink("fit-indices_CFA-on-post-to-check-for-overfitting.txt")
+overfit_test_name <- "meas-invar_CFA-on-post-to-check-for-overfitting.txt"
+sink(overfit_test_name)
 print(post.results)
 sink()
 
@@ -107,8 +107,16 @@ baseline <- measEq.syntax(configural.model = model_3,
 # orientation to the model:
 summary(baseline)
 
-# to see list of all constraints in the model:
-cat(as.character(baseline))
+# print list of all constraints in the model:
+constraints_baseline <- "meas-invar_constraints_baseline-model.txt"
+sink(constraints_baseline)
+print(cat(as.character(baseline)))
+sink()
+
+#drive_upload(constraints_baseline, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1gnWpCSBLc1Wl6jCFjk7M367RgpL0dHS9"), media = constraints_baseline)  
+file.remove(constraints_baseline)
 
 # Fit baseline model
 # Warning messages about eigenvalues that are close to zero can be ignored: https://groups.google.com/g/lavaan/c/4y5pmqRz4nk
@@ -140,12 +148,34 @@ model.prop4 <- as.character(prop4)
 fit.prop4 <- cfa(model.prop4, data = dat_collapse_responses, group = "test", ordered = TRUE)
 # summary(fit.prop4)
 
+# print list of all constraints in the model:
+constraints_prop4 <- "meas-invar_constraints_prop-4-model.txt"
+sink(constraints_prop4)
+print(cat(as.character(prop4)))
+sink()
+
+#drive_upload(constraints_prop4, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1P_B5Mxv6qcvu1TXBEXsCHRnIPQoLU2LV"), media = constraints_prop4)  
+file.remove(constraints_prop4)
+
 # Extract just the fit indices
 all.results[2,] <- round(data.matrix(fitmeasures(fit.prop4, fit.measures = c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
 # Use chi-square test to test for difference in model fit between baseline model and model with threshold equality constraints
 # p > 0.05 means no difference between the two models fits, despite higher constraints in the latter
-lavTestLRT(fit.baseline, fit.prop4) # p > 0.05 means no difference between the two models, despite higher constraints in the latter
+lavTestLRT(fit.baseline, fit.prop4) 
+
+# output results of chi-square test:
+baseline_v_prop4 <- "meas-invar_chi-sq_baseline-v-prop4.txt"
+sink(baseline_v_prop4)
+print(lavTestLRT(fit.baseline, fit.prop4))
+sink()
+
+#drive_upload(baseline_v_prop4, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1WCcCtEFyvSUD9z0GKpJoUoiBphGEwm_J"), media = baseline_v_prop4)  
+file.remove(baseline_v_prop4)
 
 ######################################################################################################
 # THRESHOLD AND LOADING INVARIANCE MODEL (aka "Proposition 7" in Wu and Estabrook's 2016)
@@ -163,6 +193,17 @@ model.prop7 <- as.character(prop7)
 fit.prop7 <- cfa(model.prop7, data = dat_collapse_responses, group = "test", ordered = TRUE)
 # summary(fit.prop7)
 
+# print list of all constraints in the model:
+constraints_prop7 <- "meas-invar_constraints_prop-7-model.txt"
+sink(constraints_prop7)
+print(cat(as.character(prop7)))
+sink()
+
+#drive_upload(constraints_prop7, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1H2X_xAyTPORTJXeRPOhgyaQZwJ0MDciN"), media = constraints_prop7)  
+file.remove(constraints_prop7)
+
 # Extract just the fit indices
 all.results[3,] <- round(data.matrix(fitmeasures(fit.prop7, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
@@ -170,7 +211,27 @@ all.results[3,] <- round(data.matrix(fitmeasures(fit.prop7, fit.measures = c("ch
 # p > 0.05 means no difference between the two models fits, despite higher constraints in the latter
 lavTestLRT(fit.prop4, fit.prop7) 
 
-all.results
+# output results of chi-square test:
+prop4_v_prop7 <- "meas-invar_chi-sq_prop4-v-prop7.txt"
+sink(prop4_v_prop7)
+print(lavTestLRT(fit.prop4, fit.prop7))
+sink()
+
+#drive_upload(prop4_v_prop7, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1Sral6rcecFkidXVg0DdU5cw5Z7FWwqhz"), media = prop4_v_prop7)  
+file.remove(prop4_v_prop7)
+
+# output all fit indices for measurement invariance
+fit_indices <- "meas-invar_all-fit-indices.txt"
+sink(fit_indices)
+print(all.results)
+sink()
+
+#drive_upload(fit_indices, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1RGJaLDpfH1z2EJM_F_UE9PJLhtq2NCz4"), media = fit_indices)  
+file.remove(fit_indices)
 # Interpreting fit indices for INDIVIDUAL models, see: http://www.understandingdata.net/2017/03/22/cfa-in-lavaan/
 # Low chi square means better model fit
 # Since chi-sq is dependent on sample size, one way useful benchmark is that chi-sq / df < 5 means good model fit
@@ -191,15 +252,10 @@ all.results
 ######################################################################################################
 # STEP 3: Calculate means in SALG responses for the three latent factors pre vs post and do T-test for significance
 
-# LEFT OFF HERE: not sure if these notes below are valid? 
-# LEFT OFF HERE: possible that function f.score (or some other function in lavaan?) can do the pre vs post t-test
 # After establishing invariance, then your next step is to constrain the latent means across groups and conduct a chi-sq difference test to see whether that set of constraints is plausible.
 # To constrain all the latent means (the omnibus test), you can just add "means" to the vector of parameters to constrain in the group.equal argument.  
-# If that test fails, then there are significant group differences in at least one of the latent means.  
-# Instead of constraining all 3 latent means, you can fix one at a time and compare that model to the partial strong invariance model using a chi-sq difference test. 
-# To constrain one at a time, you can either add parameters to the group.partial argument, or you can leave "means" out of the group.equal argument and manual constrain a latent mean using labels in the model syntax (e.g., "com ~ c(mean1, mean1)*com" )
 
-compare <- measEq.syntax(configural.model = model_5,
+compare <- measEq.syntax(configural.model = model_3,
                        data = dat_collapse_responses,
                        ordered = TRUE, # ie all variables are ordinal
                        parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
@@ -209,13 +265,26 @@ compare <- measEq.syntax(configural.model = model_5,
                        group.equal = c("thresholds", "loadings", "means"))
 
 model.compare <- as.character(compare)
-fit.compare <- cfa(model.prop7, data = dat_collapse_responses, group = "test", ordered = TRUE, meanstructure = TRUE)
+fit.compare <- cfa(model.compare, data = dat_collapse_responses, group = "test", ordered = TRUE, meanstructure = TRUE)
 summary(fit.compare) 
 
+# Does this mean there are significant differences between the mean (in at least one of the three latent factors)?
+lavTestLRT(fit.prop7, model.compare) 
 
+# FIX IT - store results in a holder data.frame
+round(data.matrix(fitmeasures(fit.compare, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
-
-
+# LEFT OFF HERE: Instead of constraining all 3 latent means, you can fix one at a time and compare that model to the partial strong invariance model using a chi-sq difference test. 
+# To constrain one at a time, you can either add parameters to the group.partial argument, or you can leave "means" out of the group.equal argument and manual constrain a latent mean using labels in the model syntax (e.g., "com ~ c(mean1, mean1)*com" )
+# Need to test the three latent factors separately: process, identity, confidence?
+# compare_process <- measEq.syntax(configural.model = model_3,
+#                              data = dat_collapse_responses,
+#                              ordered = TRUE, # ie all variables are ordinal
+#                              parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
+#                              ID.cat = "Wu.Estabrook.2016", # method for identifying residual variance for ordinal variables
+#                              ID.fac = "std.lv", # std.lv = standardize latent variables to have a mean of 0 and a variance of 1 (can now interpret these as CORRELATIONS)
+#                              group = "test", # column name defining groups
+#                              group.equal = c("thresholds", "loadings", "means"))
 
 
 
