@@ -88,9 +88,9 @@ dat_collapse_responses <- tidy_dat_all %>%
          understanding_sciprocess = if_else(understanding_sciprocess %in% c(2, 3), true = 4, false = understanding_sciprocess))
 
 # Create matrix for storing results (6 fit indices across three different models)
-all.results <- matrix(NA, nrow = 3, ncol = 6)
+all.results <- matrix(NA, nrow = 4, ncol = 6)
 colnames(all.results) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled")
-rownames(all.results) <- c("baseline", "prop4", "prop7")
+rownames(all.results) <- c("baseline", "prop4", "prop7", "scalar")
 
 # Specify BASELINE model: no constraints across groups or repeated measures
 # See ?measEq.syntax (new function in semTools, replaces measurementInvariance functions)
@@ -128,8 +128,6 @@ fit.baseline <- cfa(model.baseline, data = dat_collapse_responses, group = "test
 # Extract just the fit indices:
 all.results[1,] <- round(data.matrix(fitmeasures(fit.baseline, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
-
-
 ######################################################################################################
 # THRESHOLD INVARIANCE MODEL (aka "Proposition 4" in Wu and Estabrook's 2016)
 # Threshold are the gaps that separate the different Likert scale categories (e.g., Somewhat agree vs Strongly agree)
@@ -164,7 +162,8 @@ all.results[2,] <- round(data.matrix(fitmeasures(fit.prop4, fit.measures = c("ch
 
 # Use chi-square test to test for difference in model fit between baseline model and model with threshold equality constraints
 # p > 0.05 means no difference between the two models fits, despite higher constraints in the latter
-lavTestLRT(fit.baseline, fit.prop4) 
+lavTestLRT(fit.baseline, fit.prop4)
+# Note: lavTestLRT equivalent to anova(fit.baseline, fit.prop4)
 
 # output results of chi-square test:
 baseline_v_prop4 <- "meas-invar_chi-sq_baseline-v-prop4.txt"
@@ -222,6 +221,57 @@ sink()
 drive_update(file = as_id("1Sral6rcecFkidXVg0DdU5cw5Z7FWwqhz"), media = prop4_v_prop7)  
 file.remove(prop4_v_prop7)
 
+######################################################################################################
+# THRESHOLD, LOADING, and INTERCEPT INVARIANCE MODEL aka "scalar invariance" as per help file for 
+
+scalar <- measEq.syntax(configural.model = model_3,
+                        data = dat_collapse_responses,
+                        ordered = TRUE, # ie all variables are ordinal
+                        parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
+                        ID.cat = "Wu.Estabrook.2016", # method for identifying residual variance for ordinal variables
+                        ID.fac = "std.lv", # std.lv = standardize latent variables to have a mean of 0 and a variance of 1 (can now interpret these as CORRELATIONS)
+                        group = "test", # column name defining groups
+                        group.equal = c("thresholds", "loadings", "intercepts"))
+
+# Fit scalar invariance model
+model.scalar <- as.character(scalar)
+fit.scalar <- cfa(model.scalar, data = dat_collapse_responses, group = "test", ordered = TRUE)
+# summary(fit.prop7)
+
+# print list of all constraints in the model:
+constraints_scalar <- "meas-invar_constraints_scalar-invar-model.txt"
+sink(constraints_scalar)
+print(cat(as.character(scalar)))
+sink()
+
+#drive_upload(constraints_scalar, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1lRMGdZ8LMjg0wmFff7ZGkB6kUGg9-xH4"), media = constraints_scalar)  
+file.remove(constraints_scalar)
+
+
+# Extract just the fit indices
+all.results[4,] <- round(data.matrix(fitmeasures(fit.scalar, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+
+# Use chi-square test to test for difference in model fit between model with threshold equality constraints and model with threshold AND loading equality constraints
+# p > 0.05 means no difference between the two models fits, despite higher constraints in the latter
+lavTestLRT(fit.prop7, fit.scalar) 
+
+# output results of chi-square test:
+prop7_v_scalar <- "meas-invar_chi-sq_prop7-v-scalar.txt"
+sink(prop7_v_scalar)
+print(lavTestLRT(fit.prop7, fit.scalar))
+sink()
+
+#drive_upload(prop7_v_scalar, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# Use drive_update to update specific file based on ID number
+drive_update(file = as_id("1UKyjQOnX1XdiPdSiSzg6vov48CdaHaZA"), media = prop7_v_scalar)  
+file.remove(prop7_v_scalar)
+
+# LEFT OFF HERE: p < 0.05 chi-sq test means significant difference between prop 7 model and scalar model with constrained intercepts
+
+######################################################################################################
+
 # output all fit indices for measurement invariance
 fit_indices <- "meas-invar_all-fit-indices.txt"
 sink(fit_indices)
@@ -232,6 +282,7 @@ sink()
 # Use drive_update to update specific file based on ID number
 drive_update(file = as_id("1RGJaLDpfH1z2EJM_F_UE9PJLhtq2NCz4"), media = fit_indices)  
 file.remove(fit_indices)
+
 # Interpreting fit indices for INDIVIDUAL models, see: http://www.understandingdata.net/2017/03/22/cfa-in-lavaan/
 # Low chi square means better model fit
 # Since chi-sq is dependent on sample size, one way useful benchmark is that chi-sq / df < 5 means good model fit
