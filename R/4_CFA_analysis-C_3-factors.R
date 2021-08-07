@@ -302,7 +302,8 @@ file.remove(prop7_v_strict)
 # p < 0.05 chi-sq test when comparing prop 7 with strict model meaning that strict invariance fails
 
 # LEFT OFF HERE: What to do when strict invariance is not established (specifically for ordinal variables)
-
+# REMINDER: Attempted re-doing entire analysis with parameterization = "theta" and estimator = "DWLS" (as per Liu et al 2017) and overall result was the same (strict invariance fails)
+# REMINDER: Attempted re-doing strict invariance test by contraining the "intercepts" instead of "lv.variances" (as per Liu et al 2017) and overall result was the same (strict invariance fails)
 
 # ONLY PROCEED WITH TESTS BELOW AFTER MEASUREMENT INVARIANCE IS ESTABLISHED
 ######################################################################################################
