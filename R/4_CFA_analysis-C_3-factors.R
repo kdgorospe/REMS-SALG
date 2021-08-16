@@ -3,7 +3,7 @@
 # Once this is established, can make comparisons about the means of latent groups
 # kdgorospe@gmail.com
 # Based on: HIRSCHFELD and VON BRACHEL 2014
-# and SVETINA et al 2019 (which implements Wu and Estabrook 2016) in "Resources" folder
+# and SVETINA et al 2019 (which implements Wu and Estabrook 2016) in "Resources" folder 
 
 rm(list=ls())
 
