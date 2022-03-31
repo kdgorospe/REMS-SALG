@@ -1,9 +1,4 @@
-# Use multiple-group confirmatory factor analysis (MG-CFA) to establish measurement equivalence or invariance (ME/I)
-# Purpose of this is to demonstrate that the SALG's ability to measure latent factors was equivalent across groups (i.e., the EFA model holds over time pre vs post)
-# Once this is established, can make comparisons about the means of latent groups
-# kdgorospe@gmail.com
-# Based on: HIRSCHFELD and VON BRACHEL 2014
-# and SVETINA et al 2019 (which implements Wu and Estabrook 2016) in "Resources" folder 
+### REMINDER - tried implementing CFA for continuous variables - tests for measurement invariance appear worse than when implemented as ORDINAL variables
 
 rm(list=ls())
 
@@ -35,39 +30,25 @@ identity =~ attitudes_career + attitudes_discussing + attitudes_enthusiastic + a
 confidence =~ attitudes_confidentunderstanding + understanding_ecology + understanding_fertilization
  '
 
-# Fit indices (results) are the same for paraeterization = "delta" (same setting as measurement invariance) or "theta"
+# Fit indices (results) are the same for parameterization = "delta" (same setting as measurement invariance) or "theta"
 fit_3 <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = TRUE, parameterization = "delta")
-fit_3_theta <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = TRUE, parameterization = "theta")
+# fit_3_theta <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = TRUE, parameterization = "theta")
 # std.lv = standardize latent variables
 # doing so constrains latent variables to have a mean of 0 and a variance of 1 (allows the latent covariances to be interpreted as CORRELATIONS)
 #summary(fit_3)
 
 # Extract just the fit indices:
 # Create matrix for storing results (6 fit indices across three different models)
-post.results <- matrix(NA, nrow = 2, ncol = 6)
+post.results <- matrix(NA, nrow = 1, ncol = 6)
 colnames(post.results) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled")
-rownames(post.results) <- c("model3_delta-parameter", "model3b_theta-parameter")
+rownames(post.results) <- c("model3_delta-parameter")
 post.results[1,] <- round(data.matrix(fitmeasures(fit_3, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
-post.results[2,] <- round(data.matrix(fitmeasures(fit_3_theta, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
 post.results
 
-overfit_test_name <- "meas-invar_CFA-on-post-to-check-for-overfitting.txt"
-sink(overfit_test_name)
-print(post.results)
-sink()
-
-#drive_upload(overfit_test_name, path = as_dribble("REMS_SALG/Results")) # for initial upload
-# Use drive_update to update specific file based on ID number
-drive_update(file = as_id("18Zdh3-sD81h7CUU_Ip8lbVR4WGH6z1Zc"), media = overfit_test_name)  
-file.remove(overfit_test_name)
-# Interpreting model outputs, see: http://www.understandingdata.net/2017/03/22/cfa-in-lavaan/
-# CFI > 0.9 is an OK fit
-# TLI (more conservative than CFI because it penalizes complex models) > 0.9 is an OK fit
-# RMSEA however is > 0.05 (not a good fit)
-
+# FIX IT - go back to version of code for ordinal variables to get all other outputs - here only focusing on Measurement Invariance
 ######################################################################################################
-# STEP 2: MEASUREMENT INVARIANCE ANALYSIS OF ORDINAL VARIABLES following Svetina et al. 2019
+# STEP 2: MEASUREMENT INVARIANCE ANALYSIS OF CONTINUOUS VARIABLES
 
 # Combine the pre and post dataframes to compare them in a CFA measurement invariance framework
 tidy_dat_all <- rbind.data.frame(tidy_dat_pre_final, tidy_dat_post_final)
@@ -77,75 +58,34 @@ tidy_dat_all <- rbind.data.frame(tidy_dat_pre_final, tidy_dat_post_final)
 # vs: table(tidy_dat_all %>% filter(test == "post") %>% select(attitudes_discussing))
 # i.e., need to collapse the "2" response in the pre-test to be "3"
 # Otherwise, will get error message: lavaan ERROR: some categories of variable `attitudes_confidentresearch' are empty in group 2
-dat_collapse_responses <- tidy_dat_all %>%
-  mutate(attitudes_confidentunderstanding = if_else(attitudes_confidentunderstanding == 2, true = 3, false = attitudes_confidentunderstanding),
-         attitudes_discussing = if_else(attitudes_discussing %in% c(2, 3), true = 4, false = attitudes_discussing),
-         skills_developH0 = if_else(skills_developH0 == 2, true = 3, false = skills_developH0),
-         skills_evalH0 = if_else(skills_evalH0 == 2, true = 3, false = skills_evalH0),
-         skills_testH0 = if_else(skills_testH0 == 2, true = 3, false = skills_testH0),
-         understanding_ecology = if_else(understanding_ecology %in% c(1, 2, 3), true = 4, false = understanding_ecology),
-         understanding_fertilization = if_else(understanding_fertilization %in% c(1, 2), true = 3, false = understanding_fertilization),
-         understanding_sciprocess = if_else(understanding_sciprocess %in% c(2, 3), true = 4, false = understanding_sciprocess))
+# dat_collapse_responses <- tidy_dat_all %>%
+#   mutate(attitudes_confidentunderstanding = if_else(attitudes_confidentunderstanding == 2, true = 3, false = attitudes_confidentunderstanding),
+#          attitudes_discussing = if_else(attitudes_discussing %in% c(2, 3), true = 4, false = attitudes_discussing),
+#          skills_developH0 = if_else(skills_developH0 == 2, true = 3, false = skills_developH0),
+#          skills_evalH0 = if_else(skills_evalH0 == 2, true = 3, false = skills_evalH0),
+#          skills_testH0 = if_else(skills_testH0 == 2, true = 3, false = skills_testH0),
+#          understanding_ecology = if_else(understanding_ecology %in% c(1, 2, 3), true = 4, false = understanding_ecology),
+#          understanding_fertilization = if_else(understanding_fertilization %in% c(1, 2), true = 3, false = understanding_fertilization),
+#          understanding_sciprocess = if_else(understanding_sciprocess %in% c(2, 3), true = 4, false = understanding_sciprocess))
 
 # Create matrix for storing results (6 fit indices across three different models)
 all.results <- matrix(NA, nrow = 4, ncol = 6)
 colnames(all.results) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled")
 rownames(all.results) <- c("configural", "weak", "strong", "strict")
 
-# Specify BASELINE model: no constraints across groups or repeated measures
-# See ?measEq.syntax (new function in semTools, replaces measurementInvariance functions)
-# Following Svetina et al 2019 (which implements Wu and Estabrook 2016) - Measurement invariance for categorical variables
-baseline <- measEq.syntax(configural.model = model_3,
-                          data = dat_collapse_responses,
-                          ordered = TRUE, # ie all variables are ordinal
-                          parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
-                          ID.cat = "Wu.Estabrook.2016", # method for identifying residual variance for ordinal variables
-                          ID.fac = "std.lv", # std.lv = standardize latent variables to have a mean of 0 and a variance of 1 (can now interpret these as CORRELATIONS)
-                          group = "test", # column name defining groups
-                          group.equal = "configural")
-
-# orientation to the model:
-summary(baseline)
-
-# print list of all constraints in the model:
-constraints_baseline <- "meas-invar_constraints_baseline-model.txt"
-sink(constraints_baseline)
-print(cat(as.character(baseline)))
-sink()
-
-#drive_upload(constraints_baseline, path = as_dribble("REMS_SALG/Results")) # for initial upload
-# Use drive_update to update specific file based on ID number
-drive_update(file = as_id("1NLQqME6SN1Ix1EhfaRaBRlKasXTQLeQT"), media = constraints_baseline)  
-file.remove(constraints_baseline)
-
-# Fit baseline model
-# Warning messages about eigenvalues that are close to zero can be ignored: https://groups.google.com/g/lavaan/c/4y5pmqRz4nk
-# specify as.character to submit to lavaan
-model.baseline <- as.character(baseline)
-fit.baseline <- cfa(model.baseline, data = dat_collapse_responses, group = "test", ordered = TRUE)
+fit.baseline <- cfa(model_3, data = tidy_dat_all, group = "test")
 #summary(fit.baseline) # Results of baseline model
 
 # Extract just the fit indices:
 all.results[1,] <- round(data.matrix(fitmeasures(fit.baseline, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
 ######################################################################################################
-# THRESHOLD INVARIANCE MODEL (aka "Proposition 4" in Wu and Estabrook's 2016)
-# Threshold are the gaps that separate the different Likert scale categories (e.g., Somewhat agree vs Strongly agree)
+# WEAK VARIANCE
 
-prop4 <- measEq.syntax(configural.model = model_3,
-                       data = dat_collapse_responses,
-                       ordered = TRUE, # ie all variables are ordinal
-                       parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
-                       ID.cat = "Wu.Estabrook.2016", # method for identifying residual variance for ordinal variables
-                       ID.fac = "std.lv", # std.lv = standardize latent variables to have a mean of 0 and a variance of 1 (can now interpret these as CORRELATIONS)
-                       group = "test", # column name defining groups
-                       group.equal = "thresholds")
-
-# Fit threshold invariance model
-model.prop4 <- as.character(prop4)
-fit.prop4 <- cfa(model.prop4, data = dat_collapse_responses, group = "test", ordered = TRUE)
+fit.weak <- cfa(model_3, data = tidy_dat_all, group = "test", group.equal = c("loadings"))
 # summary(fit.prop4)
 
+# FIX IT - need to change outputs now that I'm not following code for ordinal variables
 # print list of all constraints in the model:
 constraints_prop4 <- "meas-invar_constraints_prop-4-model.txt"
 sink(constraints_prop4)
@@ -158,7 +98,7 @@ drive_update(file = as_id("1BlK2TrdaG-OxMrBgcFDabYGr-oujz7gD"), media = constrai
 file.remove(constraints_prop4)
 
 # Extract just the fit indices
-all.results[2,] <- round(data.matrix(fitmeasures(fit.prop4, fit.measures = c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+all.results[2,] <- round(data.matrix(fitmeasures(fit.weak, fit.measures = c("chisq.scaled", "df.scaled", "pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
 # Use chi-square test to test for difference in model fit between baseline model and model with threshold equality constraints
 # p > 0.05 means no difference between the two models fits, despite higher constraints in the latter
@@ -177,21 +117,13 @@ all.results[2,] <- round(data.matrix(fitmeasures(fit.prop4, fit.measures = c("ch
 # file.remove(baseline_v_prop4)
 
 ######################################################################################################
-# THRESHOLD AND LOADING INVARIANCE MODEL (aka "Proposition 7" in Wu and Estabrook's 2016)
-prop7 <- measEq.syntax(configural.model = model_3,
-                       data = dat_collapse_responses,
-                       ordered = TRUE, # ie all variables are ordinal
-                       parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
-                       ID.cat = "Wu.Estabrook.2016", # method for identifying residual variance for ordinal variables
-                       ID.fac = "std.lv", # std.lv = standardize latent variables to have a mean of 0 and a variance of 1 (can now interpret these as CORRELATIONS)
-                       group = "test", # column name defining groups
-                       group.equal = c("thresholds", "loadings"))
+# STRONG/SCALAR INVARIANCE
 
-# Fit threshold invariance model
-model.prop7 <- as.character(prop7)
-fit.prop7 <- cfa(model.prop7, data = dat_collapse_responses, group = "test", ordered = TRUE)
+
+fit.strong <- cfa(model_3, data = tidy_dat_all, group = "test", group.equal = c("loadings", "intercepts"))
 # summary(fit.prop7)
 
+# FIX IT - need to change outputs now that I'm not following code for ordinal variables
 # print list of all constraints in the model:
 constraints_prop7 <- "meas-invar_constraints_prop-7-model.txt"
 sink(constraints_prop7)
@@ -204,7 +136,7 @@ drive_update(file = as_id("1LTq_DQJFLVSj7vGVgFtXJYX6sGuwQ74z"), media = constrai
 file.remove(constraints_prop7)
 
 # Extract just the fit indices
-all.results[3,] <- round(data.matrix(fitmeasures(fit.prop7, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+all.results[3,] <- round(data.matrix(fitmeasures(fit.strong, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
 
 # Use chi-square test to test for difference in model fit between model with threshold equality constraints and model with threshold AND loading equality constraints
 # p > 0.05 means no difference between the two models fits, despite higher constraints in the latter
@@ -222,23 +154,11 @@ all.results[3,] <- round(data.matrix(fitmeasures(fit.prop7, fit.measures = c("ch
 # file.remove(prop4_v_prop7)
 
 ######################################################################################################
-# THRESHOLD, LOADING, and VARIANCE INVARIANCE MODEL aka "strict invariance" 
-# as per Liu et al 2017, strict invariance must be demonstrated to show 
-# in group.equal, add "lv.variances", i.e., residual variance of the latent variables
+# STRICT INVARIANCE
 
-strict <- measEq.syntax(configural.model = model_3,
-                        data = dat_collapse_responses,
-                        ordered = TRUE, # ie all variables are ordinal
-                        parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
-                        ID.cat = "Wu.Estabrook.2016", # method for identifying residual variance for ordinal variables
-                        ID.fac = "std.lv", # std.lv = standardize latent variables to have a mean of 0 and a variance of 1 (can now interpret these as CORRELATIONS)
-                        group = "test", # column name defining groups
-                        group.equal = c("thresholds", "loadings", "lv.variances"))
 
-# Fit strict invariance model
-model.strict <- as.character(strict)
-fit.strict <- cfa(model.strict, data = dat_collapse_responses, group = "test", ordered = TRUE)
-# summary(fit.prop7)
+fit.strict <- cfa(model_3, data = tidy_dat_all, group = "test", group.equal = c("loadings", "intercepts", "residuals"))
+# summary(fit.strict)
 
 # print list of all constraints in the model:
 constraints_strict <- "meas-invar_constraints_scalar-invar-model.txt"
@@ -278,7 +198,7 @@ file.remove(fit_indices)
 ######################################################################################################
 # Use chi-square test to test for difference in model fit between each successively stricter model
 # p > 0.05 means no difference between the two models fits, despite higher constraints in the latter
-lavTestLRT(fit.baseline, fit.prop4, fit.prop7, fit.strict) 
+lavTestLRT(fit.baseline, fit.weak, fit.strong, fit.strict) 
 
 # output results of chi-square test:
 chi_sq_all <- "meas-invar_chi-sq-test-for-all-models.txt"
@@ -301,9 +221,45 @@ file.remove(prop7_v_strict)
 # Comparing prop4 to prop7 did not show a significant decrease in model fit, so variable loadings onto latent factors are equivalent
 # p < 0.05 chi-sq test when comparing prop 7 with strict model meaning that strict invariance fails
 
-# LEFT OFF HERE: What to do when strict invariance is not established (specifically for ordinal variables)
 # REMINDER: Attempted re-doing entire analysis with parameterization = "theta" and estimator = "DWLS" (as per Liu et al 2017) and overall result was the same (strict invariance fails)
 # REMINDER: Attempted re-doing strict invariance test by contraining the "intercepts" instead of "lv.variances" (as per Liu et al 2017) and overall result was the same (strict invariance fails)
+
+######################################################################################################
+# Since strict invariance fails, move to PARTIAL INVARIANCE analysis
+fit.strict.mi<- modindices(fit.strict)
+fit.strict.mi %>%
+  arrange(desc(mi))
+
+# Modification index: the improvement in model fit in terms of the chi-square statistic IF we refit the model but allow this parameter (i.e., column LHS) to be free
+# skills_with_others
+# process
+# understanding_ecology
+# identity
+# attitudes_discussing
+
+# COPIED FROM ABOVE:
+partial.strict <- measEq.syntax(configural.model = model_3,
+                        data = dat_collapse_responses,
+                        ordered = TRUE, # ie all variables are ordinal
+                        parameterization = "delta", # recommended by Svetina et al for baseline model specification of ordinal variables
+                        ID.cat = "Wu.Estabrook.2016", # method for identifying residual variance for ordinal variables
+                        ID.fac = "std.lv", # std.lv = standardize latent variables to have a mean of 0 and a variance of 1 (can now interpret these as CORRELATIONS)
+                        group = "test", # column name defining groups
+                        group.equal = c("thresholds", "loadings", "lv.variances"),
+                        group.partial = c("skills_with_others~1"))
+
+# Fit partial.strict invariance model
+model.partial.strict <- as.character(partial.strict)
+fit.partial.strict <- cfa(partial.strict, data = dat_collapse_responses, group = "test", ordered = TRUE)
+
+# University of Cambridge slides use cfa function on original configural model to create partial invariance model:
+fit.partial.strict <- cfa(model_3, data = dat_collapse_responses, group = "test", ordered = TRUE, group.equal = c("thresholds", "loadings", "lv.variances"),
+                          group.partial = c("skills_with_others~", "proess~1"))
+
+lavTestLRT(fit.baseline, fit.prop4, fit.prop7, fit.partial.strict)
+anova(fit.prop7, fit.partial.strict)
+
+
 
 # ONLY PROCEED WITH TESTS BELOW AFTER MEASUREMENT INVARIANCE IS ESTABLISHED
 ######################################################################################################
