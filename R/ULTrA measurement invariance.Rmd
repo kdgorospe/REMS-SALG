@@ -1,0 +1,256 @@
+---
+title: "ULTrA Measurement Invariance"
+output: html_document
+---
+
+Import data if starting from here
+```{r}
+library(lavaan)
+library(readr)
+setwd("~/Desktop")
+data <- read_csv("ULTRAdata_combined.csv")
+```
+
+
+Set up the model
+```{r}
+mod <- 'growth =~ Growth_01 + Growth_02 + Growth_03 + Growth_04 + Growth_05 + Growth_06 + Growth_07 + Growth_08 + Growth_09 + Growth_10
+fixed =~ Fixed_01 + Fixed_02 + Fixed_03 + Fixed_04 + Fixed_05 + Fixed_06 + Fixed_07 + Fixed_08 + Fixed_09 + Fixed_10 + Fixed_11
+universal =~ Universal_01 + Universal_02 + Universal_03 + Universal_04 + Universal_05 + Universal_06 + Universal_07 + Universal_08 + Universal_09 + Universal_10 + Universal_11
+nonuniversal =~ NonUniversal_01 + NonUniversal_02 + NonUniversal_03 + NonUniversal_04 + NonUniversal_05 + NonUniversal_06 + NonUniversal_07 + NonUniversal_08 + NonUniversal_09 + NonUniversal_10 + NonUniversal_11 + NonUniversal_12
+brilliance =~ Brilliance_1 + Brilliance_2 + Brilliance_3 + Brilliance_4 + Brilliance_5 + Brilliance_6
+mindset =~ growth + fixed
+universality =~ universal + nonuniversal'
+```
+
+Estimate the null model. The null model does not include any differences across groups
+```{r}
+NoGroups<-cfa(mod,data,estimator="MLR", meanstructure=T)
+summary(NoGroups,standardized=T,fit.measures=T)
+```
+
+
+Get the residuals of this model
+```{r}
+residuals <- residuals(NoGroups, type = "standardized")
+write.csv(residuals,"finalmod_residuals.csv")
+```
+
+Check modification indices for 4 factor, 2 higher order factor model to identify poorly fitting items
+```{r}
+#calculate modification indices
+mod_ind <- modificationindices(NoGroups, sort.=TRUE, minimum.value=3)
+write.csv(mod_ind,"finalmod_ModInd.csv")
+```
+
+
+
+
+Multiple Group comparison with gender
+```{r}
+data$Gender <- as.factor(data$Gender)
+
+GenderMod<-cfa(mod,data,estimator="MLR", group="Gender")
+summary(GenderMod, fit.measures=T)
+```
+
+Ask Nate - Lavaan warning: Group variable 'Gender" contains missing values
+What is the default action? Drop? Should I indicate drop or FIML?
+
+Compare the null and gender models
+```{r}
+anova(NoGroups,GenderMod)
+```
+
+Multiple Group comparison with RaceEth
+comparing individuals who selected "white" as an identity with those who did not
+```{r}
+RaceEth_White<-cfa(mod,data,estimator="MLR", group="White")
+summary(RaceEth_White, fit.measures=T)
+```
+
+compare the null and the RaceEth_White models
+```{r}
+anova(NoGroups, RaceEth_White)
+```
+
+```{r}
+RaceEth_URM<-cfa(mod,data,estimator="MLR", group="URM")
+summary(RaceEth_URM, fit.measures=T)
+```
+
+
+```{r}
+anova(NoGroups, RaceEth_URM)
+```
+
+Multiple Group comparison with learning disability: 2 comparisons
+first comparison: Any disabilities (T) vs. no disabilities (F)
+```{r}
+DisabMod<-cfa(mod,data,estimator="MLR", group="disab")
+summary(DisabMod, fit.measures=T)
+```
+
+Compare the null and disability models
+```{r}
+anova(NoGroups,DisabMod)
+```
+
+Multiple Group comparison with learning disability: 2 comparisons
+second comparison: Specific learning disabilities (T) vs. not specific learning disabilities (F)
+```{r}
+LDMod<-cfa(mod,data,estimator="MLR", group="LD")
+```
+Covariance matrix is not positive definite, cannot make this comparison.
+
+
+Multiple Group comparison with generation
+```{r}
+data$Generation <- as.factor(data$Generation)
+
+GenerationMod<-cfa(mod,data,estimator="MLR", group="Generation")
+summary(GenerationMod, fit.measures=T)
+```
+
+```{r}
+anova(NoGroups,GenerationMod)
+```
+
+
+Multiple Group comparison with Language
+```{r}
+data$Language <- as.factor(data$Language)
+
+LangMod<-cfa(mod,data,estimator="MLR", group="Language")
+summary(LangMod, fit.measures=T)
+```
+
+
+```{r}
+anova(NoGroups, LangMod)
+```
+
+
+
+Multiple Group comparison with Institution type
+```{r}
+data$instcc <- FALSE
+data$instcc[data$insttype=="CC"] <- TRUE
+data$instcc <- as.factor(data$instcc)
+
+instccMod<-cfa(mod,data,estimator="MLR", group="instcc")
+summary(instccMod, fit.measures=T)
+```
+
+
+
+```{r}
+anova(NoGroups, instccMod)
+```
+
+
+```{r}
+data$inst4yr <- FALSE
+data$inst4yr[data$insttype=="Baccalaureate"] <- TRUE
+data$inst4yr[data$insttype=="Masters"] <- TRUE
+data$inst4yr[data$insttype=="Doctoral"] <- TRUE
+data$inst4yr <- as.factor(data$inst4yr)
+
+inst4yrMod<-cfa(mod,data,estimator="MLR", group="inst4yr")
+summary(inst4yrMod, fit.measures=T)
+```
+
+
+```{r}
+anova(NoGroups, inst4yrMod)
+```
+
+
+```{r}
+#collapse HRA & VHRA because there are very few responses from HRA
+data$insttype[data$insttype=="VHRA"] <- "HRA"
+
+data$insttype2 <- NA
+data$insttype2[data$insttype=="HRA"] <- "HRA"
+data$insttype2[data$insttype=="Doctoral"] <- "4yr"
+data$insttype2[data$insttype=="Masters"] <- "4yr"
+data$insttype2[data$insttype=="Baccalaureate"] <- "4yr"
+data$insttype2[data$insttype=="CC"] <- "CC"
+data$insttype2 <- as.factor(data$insttype2)
+
+insttypeMod<-cfa(mod,data,estimator="MLR", group="insttype2")
+summary(insttypeMod, fit.measures=T)
+```
+
+
+```{r}
+anova(NoGroups, insttypeMod)
+```
+
+Institution population
+```{r}
+data$instpop <- as.factor(data$instpop)
+
+popMod<-cfa(mod,data,estimator="MLR", group="instpop")
+summary(popMod, fit.measures=T)
+```
+
+```{r}
+anova(NoGroups, popMod)
+```
+
+
+
+Discipline 
+biology
+```{r}
+data$bio <- as.factor(data$bio)
+
+bioMod<-cfa(mod,data,estimator="MLR", group="bio")
+summary(bioMod, fit.measures=T)
+```
+
+```{r}
+anova(NoGroups, bioMod)
+```
+
+
+chemistry
+```{r}
+data$chem <- as.factor(data$chem)
+
+chemMod<-cfa(mod,data,estimator="MLR", group="chem")
+summary(chemMod, fit.measures=T)
+```
+
+```{r}
+anova(NoGroups, chemMod)
+```
+
+
+
+physics
+```{r}
+data$phys <- as.factor(data$phys)
+
+physMod<-cfa(mod,data,estimator="MLR", group="phys")
+summary(physMod, fit.measures=T)
+```
+
+```{r}
+anova(NoGroups, physMod)
+```
+
+
+
+math
+```{r}
+data$math <- as.factor(data$math)
+
+mathMod<-cfa(mod,data,estimator="MLR", group="math")
+summary(mathMod, fit.measures=T)
+```
+
+```{r}
+anova(NoGroups, mathMod)
+```
