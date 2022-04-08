@@ -10,7 +10,7 @@ library(googledrive)
 load("2021-07-13_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
 
 ######################################################################################################
-# QUESTION FOR LISA: CONFIRM THAT FIRST STEP IS TO IDENTIFY AN EXPLORATORY MODEL USING EFA
+# QUESTION FOR LISA: CONFIRM THAT FIRST STEP IS TO IDENTIFY AN EXPLORATORY MODEL USING EFA and confirm on the POST data
 # STEP 1: Since EFA was done on just the PRE data, do a CFA on just the POST data to make sure the EFA was not overfitting the data
 
 # Define model:
@@ -98,7 +98,7 @@ anova(no_groups, test_mod)
 
 # FIX IT - OUTPUT FINAL SAMPLE NUMBERS:
 tidy_dat_all %>%
-  na.omit() %>%
+  #na.omit() %>%
   group_by(test) %>%
   count()
 
@@ -106,22 +106,22 @@ tidy_dat_all %>%
 group_means <- tidy_dat_all %>%
   na.omit() %>%
   group_by(test) %>%
-  summarise(attitudes_career = mean(attitudes_career), 
-            attitudes_confidentresearch = mean(attitudes_confidentresearch),
-            attitudes_confidentunderstanding = mean(attitudes_confidentunderstanding),
-            attitudes_discussing = mean(attitudes_discussing),
-            attitudes_enthusiastic = mean(attitudes_enthusiastic),
-            attitudes_workwithothers = mean(attitudes_workwithothers),
-            integration_applyingknowledge = mean(integration_applyingknowledge),
-            integration_connectingknowledge = mean(integration_connectingknowledge),
-            skills_developH0 = mean(skills_developH0),
-            skills_evalH0 = mean(skills_evalH0),
-            skills_testH0 = mean(skills_testH0),
-            skills_withothers = mean(skills_withothers),
-            understanding_ecology = mean(understanding_ecology),
-            understanding_fertilization = mean(understanding_fertilization),
-            understanding_relatetolife = mean(understanding_relatetolife),
-            understanding_sciprocess = mean(understanding_sciprocess))
+  summarise(attitudes_career = mean(attitudes_career, na.rm = TRUE), 
+            attitudes_confidentresearch = mean(attitudes_confidentresearch, na.rm = TRUE),
+            attitudes_confidentunderstanding = mean(attitudes_confidentunderstanding, na.rm = TRUE),
+            attitudes_discussing = mean(attitudes_discussing, na.rm = TRUE),
+            attitudes_enthusiastic = mean(attitudes_enthusiastic, na.rm = TRUE),
+            attitudes_workwithothers = mean(attitudes_workwithothers, na.rm = TRUE),
+            integration_applyingknowledge = mean(integration_applyingknowledge, na.rm = TRUE),
+            integration_connectingknowledge = mean(integration_connectingknowledge, na.rm = TRUE),
+            skills_developH0 = mean(skills_developH0, na.rm = TRUE),
+            skills_evalH0 = mean(skills_evalH0, na.rm = TRUE),
+            skills_testH0 = mean(skills_testH0, na.rm = TRUE),
+            skills_withothers = mean(skills_withothers, na.rm = TRUE),
+            understanding_ecology = mean(understanding_ecology, na.rm = TRUE),
+            understanding_fertilization = mean(understanding_fertilization, na.rm = TRUE),
+            understanding_relatetolife = mean(understanding_relatetolife, na.rm = TRUE),
+            understanding_sciprocess = mean(understanding_sciprocess, na.rm = TRUE))
 
 # REMINDER: MODEL
 # model_3 <- '
@@ -130,6 +130,7 @@ group_means <- tidy_dat_all %>%
 # confidence =~ attitudes_confidentunderstanding + understanding_ecology + understanding_fertilization
 #  '
 
+# FIX IT - why does this method of calculating means NOT MATCH the t-test calculation of means down below
 # CALCULATE MEANS FOR LATENT FACTORS:
 group_means %>%
   rowwise() %>%
@@ -138,14 +139,24 @@ group_means %>%
          confidence = mean(attitudes_confidentunderstanding, understanding_ecology, understanding_fertilization)) %>%
   select(test, process, identity, confidence)
 
-# T-Test
-t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")),
-       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")))
+# T-Test for PROCESS
+t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(skills_developH0, skills_evalH0, skills_testH0, skills_withothers, understanding_relatetolife, understanding_sciprocess),
+       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(skills_developH0, skills_evalH0, skills_testH0, skills_withothers, understanding_relatetolife, understanding_sciprocess))
+
+
+# T-test for IDENTITY
+t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_career, attitudes_discussing, attitudes_enthusiastic, attitudes_workwithothers, integration_applyingknowledge),
+       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_career, attitudes_discussing, attitudes_enthusiastic, attitudes_workwithothers, integration_applyingknowledge))
+
+# T-test for CONFIDENCE
+t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_confidentunderstanding, understanding_ecology, understanding_fertilization),
+       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_confidentunderstanding, understanding_ecology, understanding_fertilization))
 
 
 
+# QUESTION FOR LISA: Not part of our original research question, but if we want to test: do different genders respond the same way to the intervention?
 
-
+# QUESTION FOR LISA: What about this type of code?
 # OLD CODE:
 # To constrain all the latent means (the omnibus test), you can just add "means" to the vector of parameters to constrain in the group.equal argument.  
 compare <- measEq.syntax(configural.model = model_3,
