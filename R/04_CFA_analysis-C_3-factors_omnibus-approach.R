@@ -32,6 +32,8 @@ content =~ understanding_ecology + understanding_fertilization
 
 # Fit indices (results) are the same for parameterization = "delta" (same setting as measurement invariance) or "theta"
 # Use MLR estimator for continuous-ish variables (e.g., often used when there are 5 or more response options)
+# MLR = maximum likelihood estimation with robust (Huber-White) standard errors and a scaled test statistic that is (asymptotically) equal to the Yuan-Bentler test statistic.
+# https://lavaan.ugent.be/tutorial/est.html
 fit <- cfa(model, data = tidy_dat_post_final, std.lv = TRUE, estimator = "MLR") 
 
 
@@ -59,7 +61,6 @@ sink()
 # Use drive_update to update specific file based on ID number
 drive_update(file = as_id("18Zdh3-sD81h7CUU_Ip8lbVR4WGH6z1Zc"), media = overfit_test_name)  
 file.remove(overfit_test_name)
-# Interpreting model outputs, see: http://www.understandingdata.net/2017/03/22/cfa-in-lavaan/
 # CFI > 0.9 is an OK fit
 # TLI (more conservative than CFI because it penalizes complex models) > 0.9 is an OK fit
 # RMSEA however is < 0.08 is marginal
@@ -120,7 +121,7 @@ test_mod_fit
 # Your CFA is a pretty good fit for "real life" data and 
 # yes your no groups model is a better fit which suggests that you have measurement invariance. 
 
-# Following: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5145197/
+# Following Putnick and Bornstein 2016: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5145197/
 # Reproduce Table 3 for these results, modified for omnibus approach
 
 # Get Chi Sq and (DF)
@@ -144,10 +145,10 @@ p_test <- round(fitmeasures(test_mod, fit.measures = c("pvalue.scaled")), digits
 
 # Get CFI
 cfi_base <- round(fitmeasures(no_groups, fit.measures = c("cfi.scaled")), digits = 3)
-cfi_test <- round(fitmeasures(no_groups, fit.measures = c("cfi.scaled")), digits = 3)
+cfi_test <- round(fitmeasures(test_mod, fit.measures = c("cfi.scaled")), digits = 3)
 
 # GEt RMSEA
-rmsea_base <- round(fitmeasures(no_groups, fit.measures = c("cfi.scaled")), digits = 3)
+rmsea_base <- round(fitmeasures(no_groups, fit.measures = c("rmsea.scaled")), digits = 3)
 rmsea_ci_base <- paste(round(rmsea_base, digits = 3),
                        " (", 
                        round(fitmeasures(no_groups, fit.measures = c("rmsea.ci.lower.scaled")), digits = 3),
@@ -156,7 +157,7 @@ rmsea_ci_base <- paste(round(rmsea_base, digits = 3),
                        ")",
                        sep = "", collapse = "")
 
-rmsea_test <- round(fitmeasures(test_mod, fit.measures = c("cfi.scaled")), digits = 3)
+rmsea_test <- round(fitmeasures(test_mod, fit.measures = c("rmsea.scaled")), digits = 3)
 rmsea_ci_test <- paste(round(rmsea_test, digits = 3),
                        " (", 
                        round(fitmeasures(test_mod, fit.measures = c("rmsea.ci.lower.scaled")), digits = 3),
@@ -243,7 +244,7 @@ t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year"
        y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(skills_developH0, skills_evalH0, skills_testH0))
 
 # T-test for INTEREST
-t_interest <- t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_career, attitudes_discussing, attitudes_enthusiastic),
+t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_career, attitudes_discussing, attitudes_enthusiastic),
        y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_career, attitudes_discussing, attitudes_enthusiastic))
 
 # T-test for INTEGRATION
