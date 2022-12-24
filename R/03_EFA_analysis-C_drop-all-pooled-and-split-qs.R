@@ -121,41 +121,15 @@ for (i in time_point){
 # TEST FOR NORMALITY
 ## Note: scale() function only shifts data to mean = 0 and standard deviation = 1; i.e., does nothing to affect how normally distributed it is; keep raw data so we see results in terms of the Likert scale (e.g., mean response for each variable)
 ## From Godwin 2013 for EFA: The skew and kurtosis were evaluated for each item to ensure that the assumptions of multivariate normality were not severely violated 
-## Do this separately for pre and post
 ## Use describe() to examine normality of each variable ()
 ## caution: describe() shares namespace with other packages (e.g., Hmisc); use psych::describe to specify
 
-time_point <- c("pre", "post")
-for (i in time_point){
-  tidy_dat <- get(paste("tidy_dat_", i, sep=""))
-  dat_describe <- psych::describe(tidy_dat[,4:dim(tidy_dat)[2]])
-  
-  # According to Goodwin 2016, these variables should be removed because they violate assumption of normality:
-  skew_fail <- row.names(dat_describe[abs(dat_describe$skew) >= 2,])
-  if (length(skew_fail) > 0){
-    skew_list <- paste(row.names(dat_describe[abs(dat_describe$skew) >= 2,]), collapse = ", ")
-    message <- paste(i, "dataset variables that fail skewness test:\n", skew_list, "\n")
-    cat(message) # unlike print(), cat will print \n as newline in console
-  }
-  
-  kurtosis_fail <- row.names(dat_describe[abs(dat_describe$kurtosis) >= 7,])
-  if (length(kurtosis_fail) > 0){
-    kurtosis_list <- paste(row.names(dat_describe[abs(dat_describe$kurtosis) >= 7,]), collapse = ", ")
-    message <- paste(i, "dataset variables that fail kurtosis test:\n", kurtosis_list, "\n")
-    cat(message)
-  }
-  
-  describe_csv <- paste("dat_describe_", i, ".csv", sep = "")
-  write.csv(dat_describe, describe_csv, row.names = TRUE) # write out row.names because these list the different "questions"
-  #drive_upload(describe_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
-  if (i == "pre"){
-    drive_update(file = as_id("14rh2-PdtmDwuVKQzEcNlNe0zKLpjOQ_L"), media = describe_csv)
-  }
-  if (i == "post"){
-    drive_update(file = as_id("1ccP2KC3K_rrs0b4GYOUTP5cHllb5P3RF"), media = describe_csv)
-  }
-  file.remove(describe_csv)
-}
+dat_describe <- psych::describe(tidy_dat_all[,4:dim(tidy_dat_all)[2]])
+describe_csv <- "dat_describe.csv"
+write.csv(dat_describe, describe_csv, row.names = TRUE) # write out row.names because these list the different "questions"
+#drive_upload(describe_csv, path = as_dribble("REMS_SALG/Results")) # for initial upload
+drive_update(file = as_id("1PH6jTAaII5YZykb537XVBL9-1tQTkyn-"), media = describe_csv)
+file.remove(describe_csv)
 
 
 ###################################################################################################################
