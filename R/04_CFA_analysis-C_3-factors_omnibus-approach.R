@@ -7,7 +7,10 @@ library(tidyverse)
 library(googledrive)
 
 # Restarting point
-load("2022-10-08_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
+# Two datasets should be the same (10/08 is from last analysis run on MacBook and 12/24 is from Dell), but keeping both for now
+#load("2022-10-08_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
+load("2022-12-24_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
+
 
 ######################################################################################################
 # QUESTION FOR LISA: CONFIRM THAT FIRST STEP IS TO IDENTIFY AN EXPLORATORY MODEL USING EFA and confirm on the POST data
@@ -34,8 +37,12 @@ content =~ understanding_ecology + understanding_fertilization
 # Use MLR estimator for continuous-ish variables (e.g., often used when there are 5 or more response options)
 # MLR = maximum likelihood estimation with robust (Huber-White) standard errors and a scaled test statistic that is (asymptotically) equal to the Yuan-Bentler test statistic.
 # https://lavaan.ugent.be/tutorial/est.html
-fit <- cfa(model, data = tidy_dat_post_final, std.lv = TRUE, estimator = "MLR") 
+# Original code, dropping missing data as per https://lavaan.ugent.be/tutorial/est.html
+# fit <- cfa(model, data = tidy_dat_post_final, std.lv = TRUE, estimator = "MLR") 
 
+# Implement ML estimation of missing values - Note: NO difference in model fit when running without missing = "ML"
+# https://lavaan.ugent.be/tutorial/est.html
+fit <- cfa(model, data = tidy_dat_post_final, std.lv = TRUE, estimator = "MLR", missing = "ML") 
 
 # fit_3 <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = TRUE, parameterization = "delta")
 # fit_3_theta <- cfa(model_3, data = tidy_dat_post_final, std.lv = TRUE, ordered = FALSE, parameterization = "theta")
@@ -75,7 +82,11 @@ file.remove(overfit_test_name)
 # Combine the pre and post dataframes to compare them in a CFA measurement invariance framework
 tidy_dat_all <- rbind.data.frame(tidy_dat_pre_final, tidy_dat_post_final)
 
-no_groups <-cfa(model, tidy_dat_all, estimator = "MLR", meanstructure = T)
+# Original code, dropping missing data as per https://lavaan.ugent.be/tutorial/est.html
+# no_groups <-cfa(model, tidy_dat_all, estimator = "MLR", meanstructure = T)
+
+# Attempt ML estimation of missing data 
+no_groups <-cfa(model, tidy_dat_all, estimator = "MLR", meanstructure = T, missing = "ML")
 summary(no_groups, standardized = T, fit.measures = T)
 
 # Extract just the fit indices:
@@ -90,10 +101,7 @@ no_groups_fit
 residuals <- residuals(no_groups, type = "standardized")
 # write.csv(residuals,"finalmod_residuals.csv") # save?
 
-
-# QUESTION FOR LISA: Minimum value can just be 0 right? (only 119 rows for my model)
 # Calculate modification indices
-mod_ind <- modificationindices(no_groups, sort.=TRUE, minimum.value=3)
 mod_ind <- modificationindices(no_groups, sort.=TRUE) # default minimum.value = 0
 #write.csv(mod_ind,"finalmod_ModInd.csv")
 
@@ -102,7 +110,12 @@ mod_ind <- modificationindices(no_groups, sort.=TRUE) # default minimum.value = 
 
 tidy_dat_all$test <- as.factor(tidy_dat_all$test)
 
-test_mod <- cfa(model, tidy_dat_all, estimator = "MLR", group = "test")
+# Original code, dropping missing data as per https://lavaan.ugent.be/tutorial/est.html
+# test_mod <- cfa(model, tidy_dat_all, estimator = "MLR", group = "test")
+
+# Attempt ML estimation of missing data
+test_mod <- cfa(model, tidy_dat_all, estimator = "MLR", group = "test", missing = "ML")
+
 summary(test_mod, fit.measures = T)
 
 # Extract just the fit indices:
@@ -118,8 +131,8 @@ test_mod_fit
 no_groups_fit
 test_mod_fit
 
-# Your CFA is a pretty good fit for "real life" data and 
-# yes your no groups model is a better fit which suggests that you have measurement invariance. 
+# CFA is a pretty good fit for "real life" data and 
+# no groups model is a better fit which suggests that we have measurement invariance
 
 # Following Putnick and Bornstein 2016: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5145197/
 # Reproduce Table 3 for these results, modified for omnibus approach
@@ -171,7 +184,6 @@ srmr_base <- round(fitmeasures(no_groups, fit.measures = c("srmr")), digits = 3)
 srmr_test <- round(fitmeasures(test_mod, fit.measures = c("srmr")), digits = 3)
 
 # Get deltas
-# FIX IT: Revisit abs(); Look up model rejection cutoffs for deltas (test - base vs base - test)
 delta_chisq <- round(abs(chisq_base - chisq_test), digits = 3)
 delta_df <- abs(df_base - df_test)
 delta_chisq_df <- paste(delta_chisq, " (", delta_df, ")", sep = "", collapse = "")
@@ -186,10 +198,17 @@ rownames(mi_table) <- c("no_groups", "with_groups")
 mi_table[1,] <- c(chisq_df_base, round(c(p_base, cfi_base), digits = 3), rmsea_ci_base, srmr_base, NaN, NaN, NaN, NaN)
 mi_table[2,] <- c(chisq_df_test, p_test, cfi_test, rmsea_ci_test, srmr_test, delta_chisq_df, delta_cfi, delta_rmsea, delta_srmr)
 
-mi_file <- "mi_omnibus_approach.csv"
+# mi_file <- "mi_omnibus_approach.csv"
+# drive_upload(mi_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
+# File ID for updating "mi_omnibus_approach.csv"
+# drive_update(file = as_id("1zlARe49uQg3o_73bagfusaX4vkdojMLQ"), media = mi_file)
+# file.remove(mi_file)
+
+mi_file <- "mi_omnibus_approach_with-ML-estimation-of-missing-data.csv"
 write.csv(mi_table, quote = FALSE, row.names = TRUE, file = mi_file)
 # drive_upload(mi_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-drive_update(file = as_id("1zlARe49uQg3o_73bagfusaX4vkdojMLQ"), media = mi_file)
+# File ID for updating "mi_omnibus_approach_with-ML-estimation-of-missing-data.csv"
+drive_update(file = as_id("1qlD8l8EprRelrYiYDm59tmUf7-FTZXIC"), media = mi_file)
 file.remove(mi_file)
 ######################################################################################################
 # STEP 4 - Compare the null and pre/post models
