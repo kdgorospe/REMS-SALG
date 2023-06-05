@@ -52,10 +52,10 @@ summary(fit, fit.measures = TRUE)
 
 # Extract just the fit indices:
 # Create matrix for storing results (6 fit indices across three different models)
-post_fit <- matrix(NA, nrow = 1, ncol = 6)
-colnames(post_fit) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled")
+post_fit <- matrix(NA, nrow = 1, ncol = 7)
+colnames(post_fit) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr")
 rownames(post_fit) <- c("model_delta-parameter")
-post_fit[1,] <- round(data.matrix(fitmeasures(fit, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+post_fit[1,] <- round(data.matrix(fitmeasures(fit, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr"))), digits=3)
 
 post_fit
 
@@ -68,8 +68,10 @@ sink()
 # Use drive_update to update specific file based on ID number
 drive_update(file = as_id("18Zdh3-sD81h7CUU_Ip8lbVR4WGH6z1Zc"), media = overfit_test_name)  
 file.remove(overfit_test_name)
+# Interpreting model outputs, see: http://www.understandingdata.net/2017/03/22/cfa-in-lavaan/
 # CFI > 0.9 is an OK fit
 # TLI (more conservative than CFI because it penalizes complex models) > 0.9 is an OK fit
+# From : CFI and TLI values are close to .95 or greater.
 # RMSEA however is < 0.08 is marginal
 # From Leandre R ,et al. "Evaluating the use of exploratory factor analysis in psychological research." Psychological methods 4, no. 3 (1999): 272:
 # "It has been suggested that RMSEA values less than 0.05 are good, values between 0.05 and 0.08 are acceptable, 
@@ -115,7 +117,6 @@ tidy_dat_all$test <- as.factor(tidy_dat_all$test)
 
 # Attempt ML estimation of missing data
 test_mod <- cfa(model, tidy_dat_all, estimator = "MLR", group = "test", missing = "ML")
-
 summary(test_mod, fit.measures = T)
 
 # Extract just the fit indices:
@@ -198,11 +199,11 @@ rownames(mi_table) <- c("no_groups", "with_groups")
 mi_table[1,] <- c(chisq_df_base, round(c(p_base, cfi_base), digits = 3), rmsea_ci_base, srmr_base, NaN, NaN, NaN, NaN)
 mi_table[2,] <- c(chisq_df_test, p_test, cfi_test, rmsea_ci_test, srmr_test, delta_chisq_df, delta_cfi, delta_rmsea, delta_srmr)
 
-# mi_file <- "mi_omnibus_approach.csv"
-# drive_upload(mi_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-# File ID for updating "mi_omnibus_approach.csv"
-# drive_update(file = as_id("1zlARe49uQg3o_73bagfusaX4vkdojMLQ"), media = mi_file)
-# file.remove(mi_file)
+# Use lavLRT to do likelihood ratio test (significance of difference between chisq values, i.e., delta_chisq_df)
+# as per lavaan (see output of lavTestLRT), use chisq_df_base and chisq_df_test calculated above to report robust stats for individual models
+# but use lavLRT to report p-value for delta_chisq_df
+lavTestLRT(no_groups, test_mod)
+
 
 mi_file <- "mi_omnibus_approach_with-ML-estimation-of-missing-data.csv"
 write.csv(mi_table, quote = FALSE, row.names = TRUE, file = mi_file)
@@ -210,14 +211,9 @@ write.csv(mi_table, quote = FALSE, row.names = TRUE, file = mi_file)
 # File ID for updating "mi_omnibus_approach_with-ML-estimation-of-missing-data.csv"
 drive_update(file = as_id("1qlD8l8EprRelrYiYDm59tmUf7-FTZXIC"), media = mi_file)
 file.remove(mi_file)
-######################################################################################################
-# STEP 4 - Compare the null and pre/post models
-
-anova(no_groups, test_mod)
-# Output / report result?
 
 ######################################################################################################
-# STEP 5 - Calculate means in SALG responses for the three latent factors pre vs post and do T-test for significance
+# STEP 4 - Calculate means in SALG responses for the three latent factors pre vs post and do T-test for significance
 
 # FIX IT - OUTPUT FINAL SAMPLE NUMBERS:
 tidy_dat_all %>%
