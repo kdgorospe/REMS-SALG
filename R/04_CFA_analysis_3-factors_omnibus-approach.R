@@ -93,19 +93,25 @@ summary(no_groups, standardized = T, fit.measures = T)
 
 # Extract just the fit indices:
 # Create matrix for storing results (6 fit indices across three different models)
-no_groups_fit <- matrix(NA, nrow = 1, ncol = 6)
-colnames(no_groups_fit) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled")
+no_groups_fit <- matrix(NA, nrow = 1, ncol = 7)
+colnames(no_groups_fit) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr")
 rownames(no_groups_fit) <- c("model_delta-parameter")
-no_groups_fit[1,] <- round(data.matrix(fitmeasures(no_groups, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+no_groups_fit[1,] <- round(data.matrix(fitmeasures(no_groups, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr"))), digits=3)
 
 no_groups_fit
 
-residuals <- residuals(no_groups, type = "standardized")
-# write.csv(residuals,"finalmod_residuals.csv") # save?
+# Get RMSEA confidence intervals
+rmsea_base <- round(fitmeasures(no_groups, fit.measures = c("rmsea.scaled")), digits = 3)
+rmsea_ci_base <- paste(round(rmsea_base, digits = 3),
+                       " (", 
+                       round(fitmeasures(no_groups, fit.measures = c("rmsea.ci.lower.scaled")), digits = 3),
+                       "-",
+                       round(fitmeasures(no_groups, fit.measures = c("rmsea.ci.upper.scaled")), digits = 3),
+                       ")",
+                       sep = "", collapse = "")
 
-# Calculate modification indices
-mod_ind <- modificationindices(no_groups, sort.=TRUE) # default minimum.value = 0
-#write.csv(mod_ind,"finalmod_ModInd.csv")
+rmsea_ci_base
+
 
 ######################################################################################################
 # STEP 3 - Multiple Group comparison using test groups (pre vs post)
@@ -121,56 +127,14 @@ summary(test_mod, fit.measures = T)
 
 # Extract just the fit indices:
 # Create matrix for storing results (6 fit indices across three different models)
-test_mod_fit <- matrix(NA, nrow = 1, ncol = 6)
-colnames(test_mod_fit) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled")
+test_mod_fit <- matrix(NA, nrow = 1, ncol = 7)
+colnames(test_mod_fit) <- c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr")
 rownames(test_mod_fit) <- c("model_delta-parameter")
-test_mod_fit[1,] <- round(data.matrix(fitmeasures(test_mod, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled"))), digits=3)
+test_mod_fit[1,] <- round(data.matrix(fitmeasures(test_mod, fit.measures = c("chisq.scaled","df.scaled","pvalue.scaled", "rmsea.scaled", "cfi.scaled", "tli.scaled", "srmr"))), digits=3)
 
 test_mod_fit
 
-# Compare model fits:
-no_groups_fit
-test_mod_fit
-
-# CFA is a pretty good fit for "real life" data and 
-# no groups model is a better fit which suggests that we have measurement invariance
-
-# Following Putnick and Bornstein 2016: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5145197/
-# Reproduce Table 3 for these results, modified for omnibus approach
-
-# Get Chi Sq and (DF)
-chisq_base <- round(fitmeasures(no_groups, fit.measures = c("chisq.scaled")), digits = 3)
-df_base <- fitmeasures(no_groups, fit.measures = c("df.scaled"))
-chisq_df_base <- paste(chisq_base,
-                       " (", 
-                       df_base,
-                       ")",
-                       sep = "", collapse = "")
-chisq_test <- round(fitmeasures(test_mod, fit.measures = c("chisq.scaled")), digits = 3)
-df_test <- fitmeasures(test_mod, fit.measures = c("df.scaled"))
-chisq_df_test <- paste(chisq_test,
-                       " (", 
-                       df_test,
-                       ")",
-                       sep = "", collapse = "")
-# Get P-value
-p_base <- round(fitmeasures(no_groups, fit.measures = c("pvalue.scaled")), digits = 3)
-p_test <- round(fitmeasures(test_mod, fit.measures = c("pvalue.scaled")), digits = 3)
-
-# Get CFI
-cfi_base <- round(fitmeasures(no_groups, fit.measures = c("cfi.scaled")), digits = 3)
-cfi_test <- round(fitmeasures(test_mod, fit.measures = c("cfi.scaled")), digits = 3)
-
-# GEt RMSEA
-rmsea_base <- round(fitmeasures(no_groups, fit.measures = c("rmsea.scaled")), digits = 3)
-rmsea_ci_base <- paste(round(rmsea_base, digits = 3),
-                       " (", 
-                       round(fitmeasures(no_groups, fit.measures = c("rmsea.ci.lower.scaled")), digits = 3),
-                       "-",
-                       round(fitmeasures(no_groups, fit.measures = c("rmsea.ci.upper.scaled")), digits = 3),
-                       ")",
-                       sep = "", collapse = "")
-
+# Get RMSEA confidence intervals
 rmsea_test <- round(fitmeasures(test_mod, fit.measures = c("rmsea.scaled")), digits = 3)
 rmsea_ci_test <- paste(round(rmsea_test, digits = 3),
                        " (", 
@@ -180,37 +144,15 @@ rmsea_ci_test <- paste(round(rmsea_test, digits = 3),
                        ")",
                        sep = "", collapse = "")
 
-# Get SRMR
-srmr_base <- round(fitmeasures(no_groups, fit.measures = c("srmr")), digits = 3)
-srmr_test <- round(fitmeasures(test_mod, fit.measures = c("srmr")), digits = 3)
-
-# Get deltas
-delta_chisq <- round(abs(chisq_base - chisq_test), digits = 3)
-delta_df <- abs(df_base - df_test)
-delta_chisq_df <- paste(delta_chisq, " (", delta_df, ")", sep = "", collapse = "")
-delta_cfi <- abs(cfi_base - cfi_test)
-delta_rmsea <- abs(rmsea_base - rmsea_test)
-delta_srmr <- abs(srmr_base - srmr_test)
-
-# Assemble into table:
-mi_table <- matrix(NA, nrow = 2, ncol = 9)
-colnames(mi_table) <- c("chisq_df", "pvalue_scaled", "cfi_scaled", "rmsea_ci", "srmr", "delta_chisq_df", "delta_cfi", "delta_rmsea", "delta_srmr")
-rownames(mi_table) <- c("no_groups", "with_groups")
-mi_table[1,] <- c(chisq_df_base, round(c(p_base, cfi_base), digits = 3), rmsea_ci_base, srmr_base, NaN, NaN, NaN, NaN)
-mi_table[2,] <- c(chisq_df_test, p_test, cfi_test, rmsea_ci_test, srmr_test, delta_chisq_df, delta_cfi, delta_rmsea, delta_srmr)
-
-# Use lavLRT to do likelihood ratio test (significance of difference between chisq values, i.e., delta_chisq_df)
-# as per lavaan (see output of lavTestLRT), use chisq_df_base and chisq_df_test calculated above to report robust stats for individual models
-# but use lavLRT to report p-value for delta_chisq_df
-lavTestLRT(no_groups, test_mod)
+rmsea_ci_test
 
 
-mi_file <- "mi_omnibus_approach_with-ML-estimation-of-missing-data.csv"
-write.csv(mi_table, quote = FALSE, row.names = TRUE, file = mi_file)
-# drive_upload(mi_file, path = as_dribble("REMS_SALG/Results")) # for initial upload
-# File ID for updating "mi_omnibus_approach_with-ML-estimation-of-missing-data.csv"
-drive_update(file = as_id("1qlD8l8EprRelrYiYDm59tmUf7-FTZXIC"), media = mi_file)
-file.remove(mi_file)
+# Compare model fits:
+no_groups_fit
+test_mod_fit
+
+# CFA is a pretty good fit for "real life" data and 
+# no groups model is a better fit which suggests that we have measurement invariance
 
 ######################################################################################################
 # STEP 4 - Calculate means in SALG responses for the three latent factors pre vs post and do T-test for significance
@@ -242,15 +184,6 @@ group_means <- tidy_dat_all %>%
             understanding_relatetolife = mean(understanding_relatetolife, na.rm = TRUE),
             understanding_sciprocess = mean(understanding_sciprocess, na.rm = TRUE))
 
-# FIX IT - why does this method of calculating means NOT MATCH the t-test calculation of means down below
-# CALCULATE MEANS FOR LATENT FACTORS:
-group_means %>%
-  rowwise() %>%
-  mutate(process = mean(skills_developH0, skills_evalH0, skills_testH0),
-         interest = mean(attitudes_career, attitudes_discussing, attitudes_enthusiastic),
-         integration = mean(integration_applyingknowledge, integration_connectingknowledge),
-         content = mean(understanding_ecology, understanding_fertilization)) %>%
-  select(test, process, interest, integration, content)
 
 # NOTE: this collapses all variables for a shared factor into a single vector; one for pre and one for post data and performs a t-test on the two vectors
 # i.e. - individual variables are lost in that the t-test is not taking a mean of the means for each of the three variables in a factor, rather a single mean for all the data points
