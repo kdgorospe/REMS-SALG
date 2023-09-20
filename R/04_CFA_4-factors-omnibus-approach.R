@@ -7,9 +7,10 @@ library(tidyverse)
 library(googledrive)
 
 # Restarting point
-# Two datasets should be the same (10/08 is from last analysis run on MacBook and 12/24 is from Dell), but keeping both for now
-#load("2022-10-08_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
-load("2022-12-24_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
+# Old data set with 2 to 6 Likert scale
+# load("2022-12-24_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
+# Latest dataset with 1 to 5 Likert scale
+load("2023-09-20_all-data-prior-to-CFA_pooled-qs-removed_likert-standardized_NAs-dropped.RData") 
 
 
 ######################################################################################################
