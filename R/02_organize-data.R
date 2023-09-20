@@ -228,7 +228,8 @@ coded_and_standardized_dat <- coded_dat %>%
   filter((Number %in% post_mentor & year == 2014 & test == "post")==FALSE)
   
 
-# Check: no more "1"s because they've all been conerted to NAs
+# DATA CLEANING CHECKS: 
+# no more "1"s because they've all been conerted to NAs
 table(coded_and_standardized_dat$concept, coded_and_standardized_dat$answer)
 coded_and_standardized_dat %>%
   filter(answer == 1)
@@ -236,119 +237,14 @@ coded_and_standardized_dat %>%
 coded_and_standardized_dat %>%
   filter(answer == 9)
 
+# RE-SCALE DATA 
+# Now that data is standardized as 2 to 6, re-scale to be 1 to 5 since this is a more "standard" Likert scale
+coded_and_standardized_dat <- coded_and_standardized_dat %>%
+  mutate(answer = answer - 1)
+
+
 write.csv(coded_and_standardized_dat, "coded_and_standardized_dat.csv", row.names = FALSE)
 #drive_upload("coded_and_standardized_dat.csv", path = as_dribble("REMS_SALG/")) # for initial upload
 # FILE ID for coded_dat: 
 drive_update(file = as_id("1-AUf5ojqAEHQ5RSDitKVYAOo29xJDdx4"), media = "coded_and_standardized_dat.csv")
 file.remove("coded_and_standardized_dat.csv")
-
-# CODE BELOW NO LONGER NECESSARY - no longer trying to harmonize pooled vs split questions
-# 2 - DEAL WITH inconsistent questions:
-# SPLIT vs POOLED questions: In some years, the question wording is: "Communicate the results of a research project in written and/or oral format skills" (POOLED) 
-# while in other years the wording is split: "Communicate the results of a research project in written format" and "Communicate the results of a research project in oral format"
-
-# View pooled vs split data:
-# coded_and_standardized_dat %>%
-#   filter(str_detect(coded_and_standardized_dat$concept, "pooled")) %>%
-#   select(concept) %>% unique()
-# coded_and_standardized_dat %>%
-#   filter(str_detect(coded_and_standardized_dat$concept, "split")) %>%
-#   select(concept) %>% unique()
-
-# Correlation and boxplots of pooled vs split no longer relevant since these questions get dropped from analysis
-# Only need to plot once:
-# concept_patterns <- c("skills_communicate", "understanding_oceanacid", "understanding_society", "understanding_sound")
-# split_concept_patterns <- paste(concept_patterns, "_split", sep = "")
-# # Warning message: Removed X rows for stat_boxplot and geom_point is for datapoints with missing student response
-# for (i in 1:length(concept_patterns)){
-#   p <- ggplot() +
-#     geom_boxplot(data = coded_and_standardized_dat %>% filter(str_detect(coded_and_standardized_dat$concept, concept_patterns[i])),
-#                  aes(x = answer, y = concept)) +
-#     geom_jitter(data = coded_and_standardized_dat %>% filter(str_detect(coded_and_standardized_dat$concept, concept_patterns[i])),
-#                 aes(x = answer, y = concept)) +
-#     labs(x = "", y = "")
-#   plot(p)
-#   rm(p)
-#   box_png <- paste(concept_patterns[i], "_boxplot.png", sep = "")
-#   ggsave(box_png, width = 8, height = 8)
-#   drive_upload(box_png, path = as_dribble("REMS_SALG/Results/Supplementary Information"))
-#   file.remove(box_png)
-# 
-#   plot_dat <- coded_and_standardized_dat %>%
-#     filter(str_detect(coded_and_standardized_dat$concept, split_concept_patterns[i])) %>%
-#     pivot_wider(id_cols = c(Number, year, test), names_from = concept, values_from = answer)
-#   p <- ggplot(data = plot_dat,
-#               mapping = aes(x = !!as.symbol(names(plot_dat)[4]), y = !!as.symbol(names(plot_dat)[5]))) +
-#     geom_jitter() +
-#     geom_smooth(method = lm, fullrange = TRUE) +
-#     coord_cartesian(xlim = c(0.5, 6.5), ylim = c(0.5, 6.5)) +
-#     geom_abline(slope = 1, intercept = 0) +
-#     annotate(x=1.5, y=6,
-#              label=paste("r^2 = ", round(cor(plot_dat[[4]], plot_dat[[5]], use = "complete.obs"), 2)),
-#              geom="text", size=5)
-#   plot(p)
-#   rm(p)
-#   corr_png <- paste(concept_patterns[i], "_correlation.png", sep = "")
-#   ggsave(corr_png, width = 8, height = 8)
-#   drive_upload(corr_png, path = as_dribble("REMS_SALG/Results/Supplementary Information"))
-#   file.remove(corr_png)
-# }
-
-
-# Mutate the column "concept" so that corresponding "split" questions have the same label, allowing them to be grouped together, and for their answers to be averaged
-# i.e., mutate "skills_communicate_split_written" and "skills_communicate_split_oral" to "skills_communicate_split"
-
-# coded_and_standardized_dat <- coded_and_standardized_dat %>%
-#   mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="(split_.*)", replacement = "split"),
-#                              TRUE ~ concept)) %>%
-#   group_by(Number, year, test, concept) %>%
-#   summarize(pooled_answer = mean(answer), n_question = n()) %>%
-#   ungroup()
-# 
-# # Now that answers have been pooled, mutate column "concept" so that "split" questions now say "pooled" (indicating that they can be analyzed together downstream)
-# coded_and_standardized_dat <- coded_and_standardized_dat %>%
-#   mutate(concept = case_when(str_detect(concept, "split") ~ str_replace(concept, pattern="split", replacement = "pooled"),
-#                              TRUE ~ concept))
-
-# FOLLOWING SECTIONS NO LONGER RELEVANT TO ANALYSIS (all questions about college major replaced with NAs above)
-# 3 - Switch answers for Yes=1/No=2 to Yes=2/No=1 for all questions: Are you interested in majoring in Marine Science? Not science? Science? Undecided? Unsure about College?
-# i.e., direction of variable is such that response is larger when positively associated with science to match direction of Likert scale variables 
-
-# coded_and_standardized_dat <- coded_and_standardized_dat %>%
-#   mutate(pooled_answer = case_when(str_detect(concept, "yesno") & pooled_answer == 1 ~ 2,
-#                                    str_detect(concept, "yesno") & pooled_answer == 2 ~ 1,
-#                                    TRUE ~ pooled_answer))
-
-# 4 - Deal with questions about Major and College plans which changed from Yes/NO (2013 - 2017) to multiple choice in 2018
-# CAVEAT: when the question was YES/NO, students were allowed to indicate multiple majors (they could say yes multiple times as opposed to just selecting one major)
-# View the problem:
-#coded_and_standardized_dat %>%
-#  filter(concept %in% c("major_marinesci_yesno", "major_notscience_yesno", "major_science_yesno", "major_undecided_yesno", "major_unsurecollege_yesno")) %>%
-#  arrange(year, test, Number) %>%
-#  print(n=dim(.)[1])
-
-
-# Code below partially addresses this by converting their response to the MULTIPLE CHOICE question into YES answers
-# But doesn't assume whether the student would answer YES/NO to any of the other multiple choices
-# Example: if student said their preferred major was Marine Science (multiple choice), this is converted to a "YES" to the question, Are you interested in majoring in Marine science? 
-# But rather than assuming that the student would answer "NO" to the other questions (Are you interested in majoring in a science? non-science? undecided? unsure about college?), we just leave these BLANK
-# multichoice_to_yesno <- coded_and_standardized_dat %>%
-#   filter(concept == "major_multiplechoice") %>%
-#   # Use their answer to the multiple choice to assign corresponding YES/NO concept
-#   mutate(concept = case_when(pooled_answer == 1 ~ "major_marinesci_yesno",
-#                              pooled_answer == 2 ~ "major_science_yesno",
-#                              pooled_answer == 3 ~ "major_notscience_yesno",
-#                              pooled_answer == 4 ~ "major_undecided_yesno",
-#                              pooled_answer == 5 ~ "major_unsurecollege_yesno",
-#                              TRUE ~ concept)) %>%
-#   # Now convert all answers to YES = 2
-#   mutate(pooled_answer = 2)
-
-
-# Now filter out old answers (multiple choice) and replace them with the new YES/NO versions:
-# coded_and_standardized_dat <- coded_and_standardized_dat %>% 
-#   filter(concept != "major_multiplechoice") %>%
-#   rbind(multichoice_to_yesno) %>%
-#   arrange(concept, test, year, Number)
-
-  
