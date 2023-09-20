@@ -32,7 +32,7 @@ content =~ understanding_ecology + understanding_fertilization
 # NOTE: See FOUR factor results with more permissive cutoff = 0.4: https://docs.google.com/spreadsheets/d/1y5w1OhuB2VbnYgcQ5W9d5iI8qeC2xQKIQVf-LetNMmc/edit#gid=1486559735 
 # Only gain one more variable and not in any of the factors that could use more measured variables
 # Lowering cutoff further to 0.3 makes it more difficult to interpret factors (e.g., work effectively with others starts to load with scientific process factor)
-# Since lowering the cutoff doesn't gain us much, keep stricter 0.7 cutoff so that we can say we chose a model with strong loadings
+# Since lowering the cutoff doesn't gain us much, keep stricter 0.5 cutoff so that we can say we chose a model with strong loadings
 
 # Fit indices (results) are the same for parameterization = "delta" (same setting as measurement invariance) or "theta"
 # Use MLR estimator for continuous-ish variables (e.g., often used when there are 5 or more response options)
@@ -153,14 +153,13 @@ no_groups_fit
 test_mod_fit
 
 # CFA is a pretty good fit for "real life" data and 
-# no groups model is a better fit which suggests that we have measurement invariance
+# no groups model is a better fit which demonstrates that we have measurement invariance
 
 ######################################################################################################
 # STEP 4 - Calculate means in SALG responses for the three latent factors pre vs post and do T-test for significance
 
-# FIX IT - OUTPUT FINAL SAMPLE NUMBERS:
+# OUTPUT FINAL SAMPLE NUMBERS:
 tidy_dat_all %>%
-  #na.omit() %>%
   group_by(test) %>%
   count()
 
