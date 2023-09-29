@@ -185,9 +185,6 @@ write.csv(coded_dat, "coded_dat.csv", row.names = FALSE)
 drive_update(file = as_id("1ztPIrSmNdy0o-0yJpL_oDybcEUEj1vYEy2zrLm0PhyE"), media = "coded_dat.csv")
 file.remove("coded_dat.csv")
 
-
-
-
 ### Before doing any analysis, clean data: 
 
 # 1 - Standardize scale and replace numbers with NA's: For some questions the true Likert scale is 1 to 5, and 9 = NA; For other questions the true Likert scale is 2 to 6, and 1 = NA

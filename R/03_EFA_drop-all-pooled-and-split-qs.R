@@ -47,6 +47,35 @@ tidy_dat_pre <- tidy_dat_all %>%
 tidy_dat_post <- tidy_dat_all %>%
   filter(test=="post")
 
+# Tally for pre and post datasets to report in Methods writeup
+# tidy_dat_pre %>% select(Number, year) %>% distinct() %>% nrow()
+# [1] 103
+# > tidy_dat_post %>% select(Number, year) %>% distinct() %>% nrow()
+# [1] 105
+
+# Tally per year to figure out response rate:
+# tidy_dat_pre %>% select(Number, year) %>% distinct() %>% group_by(year) %>% count()
+# Pre-data:
+# year      n
+# <chr> <int>
+# 1 2013     20
+# 2 2014     16
+# 3 2015     17
+# 4 2016     16
+# 5 2017     17
+# 6 2018     17
+
+# tidy_dat_post %>% select(Number, year) %>% distinct() %>% group_by(year) %>% count()
+# Post-data:
+# year      n
+# <chr> <int>
+#   1 2013     20
+# 2 2014     15
+# 3 2015     17
+# 4 2016     19
+# 5 2017     17
+# 6 2018     17
+
 ###################################################################################################################
 # Calculate and plot correlations
 # NOTE ON CORRELATION RESULTS: Scaling vs not scaling the variables does not change results of correlation matrix
