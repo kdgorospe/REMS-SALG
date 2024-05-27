@@ -206,7 +206,8 @@ file.remove("coded_dat.csv")
 pre_mentor <- c(25861, 23860, 51148)
 post_mentor <- c(54142, 14983, 38861)
 coded_and_standardized_dat <- coded_dat %>%
-  mutate_all(~na_if(., 9)) %>%
+  #mutate_all(~na_if(., 9)) #%>%
+  mutate_if(is.numeric, ~ na_if(., 9)) %>%
   mutate(answer = as.numeric(answer)) %>%
   # Using Christine's list above, for all questions with NA scored as 9, move answers up by 1 - i.e., ultimately, want all scales to be 2 to 6
   mutate(answer = case_when(q_number %in% c("6.1", "6.2", "6.3", "6.4", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11") & test == "post" & year %in% c("2013", "2014", "2015") ~ answer + 1,
@@ -219,7 +220,8 @@ coded_and_standardized_dat <- coded_dat %>%
   # Convert all questions about college major to NAs
   mutate(answer = if_else(str_detect(concept, "major"), true = NaN, false = answer)) %>%
   # After converting all questions about college major to NAs, NOW **ALL** "1"s are NAs
-  mutate_all(~na_if(., 1)) %>%
+  #mutate_all(~na_if(., 1)) %>%
+  mutate_if(is.numeric, ~ na_if(., 1)) %>%
   # Remove iClicker ID numbers that correspond to mentors (only want to analyze students): only applies to year 2014
   filter((Number %in% pre_mentor & year == 2014 & test == "pre")==FALSE) %>%
   filter((Number %in% post_mentor & year == 2014 & test == "post")==FALSE)
