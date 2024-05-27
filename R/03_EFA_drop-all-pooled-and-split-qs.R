@@ -40,17 +40,6 @@ tidy_dat_all <- coded_and_standardized_dat %>%
   arrange(year, test, Number) %>%
   ungroup() 
 
-############################################################################
-############################################################################
-#### MANUSCRIPT REVISION: one of the items (Career) has a factor loading greater than 1.0, which is a Heywood case. 
-# re-run all tests excluding the Career item
-tidy_dat_all <- tidy_dat_all %>%
-  select(-attitudes_career)
-
-############################################################################
-############################################################################
-
-
 # Create subsets of pre and post datasets - filter both subsets to the same questions, so they are comparable
 tidy_dat_pre <- tidy_dat_all %>%
   filter(test=="pre") 
