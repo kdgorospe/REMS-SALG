@@ -1,5 +1,4 @@
 # "Omnibus" approach based on Vandenberg and Lance 2000
-
 library(tidyverse)
 library(googledrive)
 library(broom)
@@ -61,7 +60,6 @@ broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "post") %>% select(-c("Nu
 broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_discussing, attitudes_enthusiastic),
        y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_discussing, attitudes_enthusiastic), conf.level = 0.95))
 
-
 # INTEGRATION
 # Get 95% confidence intervals around the mean for pre data
 broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(integration_applyingknowledge, integration_connectingknowledge), conf.level = 0.95))
@@ -80,7 +78,6 @@ broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "post") %>% select(-c("Nu
 # T-test
 broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(understanding_ecology, understanding_fertilization),
        y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(understanding_ecology, understanding_fertilization), conf.level = 0.95))
-
 
 
 # All significant differences between pre and post
