@@ -41,42 +41,6 @@ group_means <- tidy_dat_all %>%
 
 # NOTE: this collapses all variables for a shared factor into a single vector; one for pre and one for post data and performs a t-test on the two vectors
 # i.e. - individual variables are lost in that the t-test is not taking a mean of the means for each of the three variables in a factor, rather a single mean for all the data points
-# SCIENTIFIC PROCESS
-# Get 95% confidence intervals around the mean for pre data
-broom::tidy(t.test(tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(skills_developH0, skills_evalH0, skills_testH0), conf.level = 0.95))
-# Get 95% confidence intervals around the mean for post data
-broom::tidy(t.test(tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(skills_developH0, skills_evalH0, skills_testH0),conf.level = 0.95))
-# T-Test
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(skills_developH0, skills_evalH0, skills_testH0),
-       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(skills_developH0, skills_evalH0, skills_testH0), conf.level = 0.95))
-
-# IDENTITY
-# Get 95% confidence intervals around the mean for pre data
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_discussing, attitudes_enthusiastic), conf.level = 0.95))
-# Get 95% confidence intervals around the mean for post data
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_discussing, attitudes_enthusiastic), conf.level = 0.95))
-# T-test
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_discussing, attitudes_enthusiastic),
-       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_discussing, attitudes_enthusiastic), conf.level = 0.95))
-
-# COLLABORATION
-# Get 95% confidence intervals around the mean for pre data
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_workwithothers, skills_withothers), conf.level = 0.95))
-# Get 95% confidence intervals around the mean for post data
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_workwithothers, skills_withothers), conf.level = 0.95))
-# T-test
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(attitudes_workwithothers, skills_withothers),
-       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(attitudes_workwithothers, skills_withothers), conf.level = 0.95))
-
-# HOLISTIC CONTENT
-# Get 95% confidence intervals around the mean for pre data
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(understanding_ecology, understanding_fertilization, integration_connectingknowledge), conf.level = 0.95))
-# Get 95% confidence intervals around the mean for post data
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(understanding_ecology, understanding_fertilization, integration_connectingknowledge), conf.level = 0.95))
-# T-test
-broom::tidy(t.test(x = tidy_dat_all %>% filter(test == "pre") %>% select(-c("Number", "year", "test")) %>% select(understanding_ecology, understanding_fertilization, integration_connectingknowledge),
-       y = tidy_dat_all %>% filter(test == "post") %>% select(-c("Number", "year", "test")) %>% select(understanding_ecology, understanding_fertilization, integration_connectingknowledge), conf.level = 0.95))
-
 
 # SCIENTIFIC PROCESS
 # Get 95% confidence intervals around the mean for pre data
