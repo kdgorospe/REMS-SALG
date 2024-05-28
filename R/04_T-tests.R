@@ -1,7 +1,5 @@
 # "Omnibus" approach based on Vandenberg and Lance 2000
 
-rm(list=ls())
-
 library(tidyverse)
 library(googledrive)
 library(broom)
